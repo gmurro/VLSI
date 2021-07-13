@@ -59,7 +59,8 @@ Points:
    - sum on any horizontal line traversed circuits can be at most w (implied constraint)
    - global constraints
    - symmetry braking constraints 
-     - (ideas) set initially bigger blocks
+   - (ideas) set initially bigger blocks
+   - forall circuits *cx + x <= w*
 
 5. *Objective function*: minimize l
 
