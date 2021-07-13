@@ -46,11 +46,11 @@ Points:
 2. *Variables*: 
 
    - l (max of each column in the matrix that contains something)
-   - p matrix of dimension w, max_l
+   - p matrix of dimension n (numeber of circuits), 2 (x, y)
 
 3. Domains: 
 
-   - p in [0, n] (0 means empty, 1,2,3..., n represent the correspondent block)
+   - p[x] in [0, w] and p[y] in [0, max_l]
 
    
 
