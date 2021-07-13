@@ -68,6 +68,9 @@ Points:
 - rotation 180°
 - vertical flip
 - horizonatl flip
+- blocks not on the base line (?)
+
+![Simmetries](./assets/img/simmetries.jpg)
 
 For CP investigate how work whether the rotation is allowed
 
