@@ -1,4 +1,4 @@
-## PROJECT CDMO
+# PROJECT CDMO
 
 We have to insert given circuits into a silicon plate.
 
@@ -35,7 +35,7 @@ Points:
 
 
 
-### Model
+## First model
 
 1. *Data*:
 
@@ -78,7 +78,9 @@ Points:
 For CP investigate how work whether the rotation is allowed
 
 
+## Alternative model
 
+![Alternative model](./assets/img/alternative_model.jpg) 
 
 
 ### Runtime
