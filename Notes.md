@@ -63,7 +63,11 @@ Points:
 
 5. *Objective function*: minimize l
 
-
+**Simmetries on the plate:**
+- original
+- rotation 180°
+- vertical flip
+- horizonatl flip
 
 For CP investigate how work whether the rotation is allowed
 
