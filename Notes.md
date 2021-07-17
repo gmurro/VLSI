@@ -66,6 +66,8 @@ Points:
 
 5. *Objective function*: minimize l
 
+![Model_xy](./assets/img/model_xy.jpg)
+
 **Simmetries on the plate:**
 - original
 - rotation 180°
