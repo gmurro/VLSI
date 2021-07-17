@@ -41,6 +41,7 @@ Points:
 
    - w
    - n
+   - forall cirtuits: x, y
    - max_l (sum of all heights of circuits)
 
 2. *Variables*: 
