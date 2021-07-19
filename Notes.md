@@ -41,6 +41,7 @@ Points:
 
    - w
    - n
+   - forall cirtuits: x, y
    - max_l (sum of all heights of circuits)
 
 2. *Variables*: 
@@ -66,6 +67,8 @@ Points:
 
 5. *Objective function*: minimize l
 
+![Model_xy](./assets/img/model_xy.jpg)
+
 **Simmetries on the plate:**
 - original
 - rotation 180°
@@ -88,3 +91,8 @@ For CP investigate how work whether the rotation is allowed
 Solutions must be provided by the model within 300 sec.
 
 Solve as many instances as possible in this time range.
+
+
+## Tips Minizinc
+
+![Tips](./assets/img/IMG_20210717_170723.jpg)  
