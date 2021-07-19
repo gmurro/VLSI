@@ -48,10 +48,6 @@ constraint forall(i,j in CIRCUITS where i<j)((p[j,2] <= p[i,2] /\ p[i,2] < p[j,2
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative([p[i,2] | i in CIRCUITS], y, x, w);
 
-% constraint about x
-constraint forall(i,j in CIRCUITS where i < j)(p[i,2] == p[j,2] -> (p[i,1] + x[i] <= p[j,1]) \/ (p[j,1] + x[j] <= p[i,1]));
-
-
 % minimizing the length of the plate
 solve minimize l;
 
