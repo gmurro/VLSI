@@ -52,6 +52,7 @@ constraint forall(i,j in CIRCUITS where i<j)((p[j,2] <= p[i,2] /\ p[i,2] < p[j,2
 % minimizing the length of the plate
 solve minimize l;
 
+output["\(w) \(l)\n\(n)\n"] ++ ["\(x[i]) \(y[i]) \(p[i,1]) \(p[i,2])\n" | i in CIRCUITS];
 
 
 
