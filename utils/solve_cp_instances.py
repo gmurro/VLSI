@@ -25,7 +25,8 @@ def main():
     for in_file in glob(os.path.join(in_dir, '*.dzn')):
         command = f'minizinc --solver Gecode -p {cores} -t 300000 --solver-statistics {model} {in_file}' \
             if args.stat else f'minizinc --solver Gecode -p {cores} -t 300000 {model} {in_file}'
-        instance_name = in_file.split('/')[-1]
+
+        instance_name = in_file.split('\\')[-1] if os.name == 'nt' else n_file.split('/')[-1]
         instance_name = instance_name[:len(instance_name) - 4]
         out_file = os.path.join(out_dir, instance_name + '-out.txt')
         with open(out_file, 'w') as f:
