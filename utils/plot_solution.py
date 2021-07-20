@@ -78,7 +78,10 @@ if __name__ == "__main__":
 
             # To remove empty lines
             remaining_lines = [line.strip() for line in remaining_lines if line.strip()]
-
+            print(remaining_lines)
+            # To remove lines like === or ----
+            remaining_lines = [line for line in remaining_lines if ("=" not in line) and ('-' not in line)]
+            print(remaining_lines)
             circuits = []
             solution = {'corners': []}
 
