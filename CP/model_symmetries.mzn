@@ -1,4 +1,5 @@
 include "cumulative.mzn";
+include "lex_lesseq.mzn";
 
 % input of the problem
 
@@ -32,6 +33,11 @@ array[CIRCUITS] of var 0..l_max-min(y): p_y;
 var MAX_HEIGTH: l;
 l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
+% tensor used for channelling and symmetry breaking
+set of int: BOARD_X = 0..w-1;
+set of int: BOARD_Y = 0..l_max-1;
+array[BOARD_X,BOARD_Y,CIRCUITS] of var 1..2: board;
+
 % constraints of the problem
 
 % all coordinates must be different
@@ -57,6 +63,18 @@ constraint forall(i,j in CIRCUITS where i != j)((p_y[j] <= p_y[i] /\ p_y[i] < p_
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
+
+% constraint for channelling
+constraint forall(i in BOARD_X, j in BOARD_Y, k in CIRCUITS)(board[i,j,k] == 1 <-> p_x[k] <= i /\ i <= p_x[k] + x[k] /\ p_y[k] <= j /\ j <= p_y[k] + y[k]);
+
+% symmetry breaking
+%constraint lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in BOARD_Y, k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in BOARD_Y, k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in reverse(BOARD_Y), k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in BOARD_X, j in reverse(BOARD_Y), k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in BOARD_Y, k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in reverse(BOARD_Y), k in CIRCUITS ])
+%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in reverse(BOARD_Y), k in CIRCUITS ]);
 
 % minimizing the length of the plate
 ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);
