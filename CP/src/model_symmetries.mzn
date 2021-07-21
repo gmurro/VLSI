@@ -68,13 +68,13 @@ constraint cumulative(p_x, x, y, l_max);
 constraint forall(i in BOARD_X, j in BOARD_Y, k in CIRCUITS)(board[i,j,k] == 1 <-> p_x[k] <= i /\ i <= p_x[k] + x[k] /\ p_y[k] <= j /\ j <= p_y[k] + y[k]);
 
 % symmetry breaking
-%constraint lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in BOARD_Y, k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in BOARD_Y, k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in reverse(BOARD_Y), k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in BOARD_X, j in reverse(BOARD_Y), k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in BOARD_Y, k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in reverse(BOARD_Y), k in CIRCUITS ])
-%/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in reverse(BOARD_Y), k in CIRCUITS ]);
+constraint lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in BOARD_X, k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in BOARD_X, k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in reverse(BOARD_X), k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in BOARD_X, j in reverse(BOARD_X), k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in BOARD_X, k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in reverse(BOARD_X), k in CIRCUITS ])
+/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in reverse(BOARD_X), k in CIRCUITS ]);
 
 % minimizing the length of the plate
 ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);
