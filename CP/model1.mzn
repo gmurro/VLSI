@@ -41,12 +41,12 @@ constraint max([p[i,2] + y[i] | i in CIRCUITS]) <= l_max;
 % relationship on x axes
 % if the x of a block is between the x of another block and its x plus its width, it means that
 % the other block is on or under this block
-constraint forall(i,j in CIRCUITS where i<j)((p[j,1] <= p[i,1] /\ p[i,1] < p[j,1] + x[j]) -> (p[j,2] + y[j] <= p[i,2]) \/ (p[i,2] + y[i] <= p[j,2]));
+constraint forall(i,j in CIRCUITS where i != j)((p[j,1] <= p[i,1] /\ p[i,1] < p[j,1] + x[j]) -> (p[j,2] + y[j] <= p[i,2]) \/ (p[i,2] + y[i] <= p[j,2]));
 
 % relationship on y axes
 % if the y of a block is between the y of another block and its y plus its heigth, it means that
 % the other block is on the right or left of this block
-constraint forall(i,j in CIRCUITS where i<j)((p[j,2] <= p[i,2] /\ p[i,2] < p[j,2] + y[j]) -> (p[j,1] + x[j] <= p[i,1]) \/ (p[i,1] + x[i] <= p[j,1]));
+constraint forall(i,j in CIRCUITS where i != j)((p[j,2] <= p[i,2] /\ p[i,2] < p[j,2] + y[j]) -> (p[j,1] + x[j] <= p[i,1]) \/ (p[i,1] + x[i] <= p[j,1]));
 
 
 % minimizing the length of the plate
