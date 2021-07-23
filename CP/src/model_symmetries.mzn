@@ -1,25 +1,30 @@
 include "cumulative.mzn";
+include "alldifferent.mzn";
 include "lex_lesseq.mzn";
 
 % input of the problem
 
 % width of the plate
 int: w;
-set of int: MAX_WIDTH_CIR = 1..w;
+set of int: FEASIBLE_WIDTH = 1..w;
+
+% maximum heigth of the plate
+int: l_max;
+set of int: FEASIBLE_HEIGTH = 1..l_max;
 
 % number of circuits
 int: n;
 set of int: CIRCUITS = 1..n;
 
 % horizontal dimension of circuits
-array[CIRCUITS] of MAX_WIDTH_CIR: x;
+array[CIRCUITS] of FEASIBLE_WIDTH: x;
 
 % vertical dimension of the circuits
-array[CIRCUITS] of int: y;
+array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
-% maximum heigth of the plate
-int: l_max;
-set of int: MAX_HEIGTH = 1..l_max;
+% order of magnitude of w
+int: mag_w;
+
 
 % definition of the variables
 
@@ -30,19 +35,25 @@ array[CIRCUITS] of var 0..w-min(x): p_x;
 array[CIRCUITS] of var 0..l_max-min(y): p_y;
 
 % length of the plate to minimize
-var MAX_HEIGTH: l;
+var FEASIBLE_HEIGTH: l;
 l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
-% tensor used for channelling and symmetry breaking
-set of int: BOARD_X = 0..w-1;
-set of int: BOARD_Y = 0..l_max-1;
-array[BOARD_X,BOARD_Y,CIRCUITS] of var 1..2: board;
+% duel modeling
+% channeling with a matrix containing the distribution of the circuits
+array[0..w-1,0..l_max-1] of var 0..n: board;
+
+% area of each circuit
+array[CIRCUITS] of int: area = [ x[i] * y[i] | i in CIRCUITS];
+
 
 % constraints of the problem
 
-% all coordinates must be different
-constraint forall(i,j in CIRCUITS where i<j)(p_x[i] != p_x[j] \/ p_y[i] != p_y[j]);
+% IMPLIED CONSTRAINTS
 
+
+% all coordinates must be different
+
+constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 
 % maximum width
 constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
@@ -50,31 +61,22 @@ constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
 % maximum heigth
 constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 
-% relationship on x axes
-% if the x of a block is between the x of another block and its x plus its width, it means that
-% the other block is on or under this block
-constraint forall(i,j in CIRCUITS where i != j)((p_x[j] <= p_x[i] /\ p_x[i] < p_x[j] + x[j]) -> (p_y[j] + y[j] <= p_y[i]) \/ (p_y[i] + y[i] <= p_y[j]));
+% relationships among circuits
+constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x[i] <= p_x[j] \/ p_x[j] + x[j] <= p_x[i] \/ p_y[i] + y[i] <= p_y[j] \/ p_y[j] + y[j] <= p_y[i]);
 
-% relationship on y axes
-% if the y of a block is between the y of another block and its y plus its heigth, it means that
-% the other block is on the right or left of this block
-constraint forall(i,j in CIRCUITS where i != j)((p_y[j] <= p_y[i] /\ p_y[i] < p_y[j] + y[j]) -> (p_x[j] + x[j] <= p_x[i]) \/ (p_x[i] + x[i] <= p_x[j]));
 
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
 
-% constraint for channelling
-constraint forall(i in BOARD_X, j in BOARD_Y, k in CIRCUITS)(board[i,j,k] == 1 <-> p_x[k] <= i /\ i <= p_x[k] + x[k] /\ p_y[k] <= j /\ j <= p_y[k] + y[k]);
+% channelling constraint
+% constraint on the board
+constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(board[i,j] == k <-> p_x[k] <= i /\ i < p_x[k] + x[k] /\ p_y[k] <= j /\ j < p_y[k] + y[k]);
 
 % symmetry breaking
-constraint lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in BOARD_X, k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in BOARD_X, k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in BOARD_X, j in reverse(BOARD_X), k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in BOARD_X, j in reverse(BOARD_X), k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in BOARD_X, k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[i,j,k] | i in reverse(BOARD_X), j in reverse(BOARD_X), k in CIRCUITS ])
-/\  lex_lesseq(array1d(board), [ board[j,i,k] | i in reverse(BOARD_X), j in reverse(BOARD_X), k in CIRCUITS ]);
+constraint lex_lesseq(array1d(board),[ board[i,j] | i in 0..w-1, j in reverse(0..l_max-1)]) 
+        /\ lex_lesseq(array1d(board),[ board[i,j] | i in reverse(0..w-1), j in 0..l_max-1])
+        /\ lex_lesseq(array1d(board),[ board[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)]);
 
 % minimizing the length of the plate
 ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);

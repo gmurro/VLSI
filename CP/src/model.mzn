@@ -1,4 +1,5 @@
 include "cumulative.mzn";
+include "alldifferent.mzn";
 
 % input of the problem
 
@@ -20,6 +21,8 @@ array[CIRCUITS] of FEASIBLE_WIDTH: x;
 % vertical dimension of the circuits
 array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
+% order of magnitude of w
+int: mag_w;
 
 
 % definition of the variables
@@ -34,11 +37,15 @@ array[CIRCUITS] of var 0..l_max-min(y): p_y;
 var FEASIBLE_HEIGTH: l;
 l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
+
 % constraints of the problem
 
-% all coordinates must be different
-constraint forall(i,j in CIRCUITS where i<j)(p_x[i] != p_x[j] \/ p_y[i] != p_y[j]);
+% IMPLIED CONSTRAINTS
 
+
+% all coordinates must be different
+
+constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 
 % maximum width
 constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
@@ -46,15 +53,9 @@ constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
 % maximum heigth
 constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 
-% relationship on x axes
-% if the x of a block is between the x of another block and its x plus its width, it means that
-% the other block is on or under this block
-constraint forall(i,j in CIRCUITS where i != j)((p_x[j] <= p_x[i] /\ p_x[i] < p_x[j] + x[j]) -> (p_y[j] + y[j] <= p_y[i]) \/ (p_y[i] + y[i] <= p_y[j]));
+% relationships among circuits
+constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x[i] <= p_x[j] \/ p_x[j] + x[j] <= p_x[i] \/ p_y[i] + y[i] <= p_y[j] \/ p_y[j] + y[j] <= p_y[i]);
 
-% relationship on y axes
-% if the y of a block is between the y of another block and its y plus its heigth, it means that
-% the other block is on the right or left of this block
-constraint forall(i,j in CIRCUITS where i != j)((p_y[j] <= p_y[i] /\ p_y[i] < p_y[j] + y[j]) -> (p_x[j] + x[j] <= p_x[i]) \/ (p_x[i] + x[i] <= p_x[j]));
 
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
