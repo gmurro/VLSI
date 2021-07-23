@@ -4,21 +4,23 @@ include "cumulative.mzn";
 
 % width of the plate
 int: w;
-set of int: MAX_WIDTH_CIR = 1..w;
+set of int: FEASIBLE_WIDTH = 1..w;
+
+% maximum heigth of the plate
+int: l_max;
+set of int: FEASIBLE_HEIGTH = 1..l_max;
 
 % number of circuits
 int: n;
 set of int: CIRCUITS = 1..n;
 
 % horizontal dimension of circuits
-array[CIRCUITS] of MAX_WIDTH_CIR: x;
+array[CIRCUITS] of FEASIBLE_WIDTH: x;
 
 % vertical dimension of the circuits
-array[CIRCUITS] of int: y;
+array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
-% maximum heigth of the plate
-int: l_max;
-set of int: MAX_HEIGTH = 1..l_max;
+
 
 % definition of the variables
 
@@ -29,7 +31,7 @@ array[CIRCUITS] of var 0..w-min(x): p_x;
 array[CIRCUITS] of var 0..l_max-min(y): p_y;
 
 % length of the plate to minimize
-var MAX_HEIGTH: l;
+var FEASIBLE_HEIGTH: l;
 l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
 % constraints of the problem
