@@ -40,10 +40,8 @@ l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
 % duel modeling
 % channeling with a matrix containing the distribution of the circuits
-array[0..w-1,0..l_max-1] of var 0..n: board;
-
-% area of each circuit
-array[CIRCUITS] of int: area = [ x[i] * y[i] | i in CIRCUITS];
+set of int: VALUES = 0..n;
+array[0..w-1,0..l_max-1] of var VALUES: board;
 
 
 % constraints of the problem
@@ -74,9 +72,10 @@ constraint cumulative(p_x, x, y, l_max);
 constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(board[i,j] == k <-> p_x[k] <= i /\ i < p_x[k] + x[k] /\ p_y[k] <= j /\ j < p_y[k] + y[k]);
 
 % symmetry breaking (horizontal flip, vertical flip and 180° rotation)
-constraint lex_lesseq(array1d(board),[ board[i,j] | i in 0..w-1, j in reverse(0..l_max-1)]) 
+constraint symmetry_breaking_constraint(
+           lex_lesseq(array1d(board),[ board[i,j] | i in 0..w-1, j in reverse(0..l_max-1)]) 
         /\ lex_lesseq(array1d(board),[ board[i,j] | i in reverse(0..w-1), j in 0..l_max-1]) 
-        /\ lex_lesseq(array1d(board),[ board[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)]);
+        /\ lex_lesseq(array1d(board),[ board[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)]));
 
 % minimizing the length of the plate
 ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);
