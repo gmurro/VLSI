@@ -50,7 +50,7 @@ constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 % maximum width
 constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
 
-% maximum heigth
+% maximum heigth (it could be eliminated for construction of l_max if we do not take into account rotation)
 constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 
 % relationships among circuits

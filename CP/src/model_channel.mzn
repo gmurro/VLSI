@@ -1,6 +1,6 @@
 include "cumulative.mzn";
 include "alldifferent.mzn";
-include "at_most.mzn";
+include "global_cardinality_low_up.mzn";
 
 % input of the problem
 
@@ -72,9 +72,13 @@ constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(board[i,j] == k <-
 
 % relationship on the space covered by each circuit
 
-constraint forall(i in 0..w-1)(at_most(l_max, [board[i,j] | j in 0..l_max-1], 0..n));
+constraint forall(i in 0..w-1)(
+  global_cardinality_low_up([board[i,j] | j in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
+);
 
-constraint forall(j in 0..l_max-1)(at_most(w,[board[i,j] | i in 0..w-1], 0..n));
+constraint forall(j in 0..l_max-1)(
+  global_cardinality_low_up([board[i,j] | i in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
+);
 
 % minimizing the length of the plate
 ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);

@@ -1,5 +1,6 @@
 include "cumulative.mzn";
 include "alldifferent.mzn";
+include "global_cardinality_low_up.mzn";
 include "lex_lesseq.mzn";
 
 % input of the problem
@@ -70,6 +71,15 @@ constraint cumulative(p_x, x, y, l_max);
 % channelling constraint
 % constraint on the board
 constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(board[i,j] == k <-> p_x[k] <= i /\ i < p_x[k] + x[k] /\ p_y[k] <= j /\ j < p_y[k] + y[k]);
+
+% cardinality constraint
+constraint forall(i in 0..w-1)(
+  global_cardinality_low_up([board[i,j] | j in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
+);
+
+constraint forall(j in 0..l_max-1)(
+  global_cardinality_low_up([board[i,j] | i in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
+);
 
 % symmetry breaking (horizontal flip, vertical flip and 180° rotation)
 constraint symmetry_breaking_constraint(
