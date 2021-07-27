@@ -21,6 +21,12 @@ array[CIRCUITS] of FEASIBLE_WIDTH: x;
 % vertical dimension of the circuits
 array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
+% area of circuits
+array[CIRCUITS] of int: area = [ x[i] * y[i] | i in CIRCUITS];
+
+% circuit with the maximum height
+int: index = arg_max(y);
+
 % order of magnitude of w
 int: mag_w;
 
@@ -61,16 +67,67 @@ constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x[i] <= p_x[j] \/ p_x[j]
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
 
-% minimizing the length of the plate
-ann: search_ann_x = int_search(p_x,dom_w_deg,indomain_random);
-ann: search_ann_y = int_search(p_y,dom_w_deg,indomain_random);
-ann: restart = restart_luby(100);
+% symmetry breaking constraint
+constraint symmetry_breaking_constraint(
+  p_x[index] == 0 /\ p_y[index] == 0
+);
 
-% maybe also a LNS could be useful for this COP
+% higher density on the left wrt the right
+%constraint symmetry_breaking_constraint(
+%  sum(i in CIRCUITS where p_x[i] <= w div 2)(area[i]) > sum(i in CIRCUITS where p_x[i] > w div 2)(area[i])
+%);
+
+% Parameters to control the search heuristic and restart strategy
+int: heuristic = 6;
+int: restart = 4;
+
+ann: search_ann_x = 
+if heuristic == 1 then
+  int_search(p_x, input_order, indomain_min)
+elseif heuristic == 2 then
+  int_search(p_x, first_fail, indomain_min)
+elseif heuristic == 3 then
+  int_search(p_x, dom_w_deg, indomain_min)
+elseif heuristic == 4 then
+  int_search(p_x, input_order, indomain_random)
+elseif heuristic == 5 then
+  int_search(p_x, first_fail, indomain_random)
+else
+  int_search(p_x, dom_w_deg, indomain_random)
+endif;
+
+ann: search_ann_y = 
+if heuristic == 1 then
+  int_search(p_y, input_order, indomain_min)
+elseif heuristic == 2 then
+  int_search(p_y, first_fail, indomain_min)
+elseif heuristic == 3 then
+  int_search(p_y, dom_w_deg, indomain_min)
+elseif heuristic == 4 then
+  int_search(p_y, input_order, indomain_random)
+elseif heuristic == 5 then
+  int_search(p_y, first_fail, indomain_random)
+else
+  int_search(p_y, dom_w_deg, indomain_random)
+endif;
+
+ann: restart_ann =
+if restart == 1 then
+  restart_constant(100)
+elseif restart == 2 then
+  restart_linear(100)
+elseif restart == 3 then
+  restart_geometric(1.5,100)
+elseif restart == 4 then
+  restart_luby(100)
+else
+  restart_none
+endif;
 
 solve :: search_ann_x
       :: search_ann_y
-      :: restart
-      minimize l;
+      :: restart_ann
+         minimize l;
+
 
 output["\(w) \(l)\n\(n)\n"] ++ ["\(x[i]) \(y[i]) \(p_x[i]) \(p_y[i])\n" | i in CIRCUITS];
