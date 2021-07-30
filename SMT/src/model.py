@@ -7,7 +7,7 @@ from itertools import combinations
 def solve_instance(w, n, x, y, l_max, mag_w):
 
     # index of the circuit with the highest value
-    index = argmax(y)
+    index = argmax(y)[0]
 
     # definition of the variables
 
@@ -46,7 +46,7 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     # cumulative constraints
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
-    symmetry = [And(p_x[index] == 0,p_y[index] == 0)]
+    symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
 
     # setting the optimizer
     opt = Optimize()
