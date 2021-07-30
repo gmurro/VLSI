@@ -4,10 +4,21 @@ from numpy import argmax
 from itertools import combinations
 
 
+def cumulative(start, duration, resources, total):
+
+    decomposition = []
+    for u in resources:
+        decomposition.append(
+            sum([If(And(start[i] <= u, u < start[i] + duration[i]), resources[i], 0)
+                 for i in range(len(start))]) <= total
+        )
+    return decomposition
+
+
 def solve_instance(w, n, x, y, l_max, mag_w):
 
     # index of the circuit with the highest value
-    index = argmax(y)[0]
+    index = argmax(y)
 
     # definition of the variables
 
@@ -27,6 +38,10 @@ def solve_instance(w, n, x, y, l_max, mag_w):
 
     # value of l
     objective = length == max([p_y[i] + y[i] for i in range(n)])
+
+    # cumulative constraints
+    cumulative_y = cumulative(p_y, y, x, w)
+    cumulative_x = cumulative(p_x, x, y, l_max)
 
     # maximum width
     max_w = [max([p_x[i] + x[i] for i in range(n)]) <= w]
@@ -50,7 +65,8 @@ def solve_instance(w, n, x, y, l_max, mag_w):
 
     # setting the optimizer
     opt = Optimize()
-    opt.add(domain_x + domain_y + all_different + [objective] + max_w + max_h + symmetry)
+    opt.add(domain_x + domain_y + all_different + [objective] + cumulative_x +
+            cumulative_y + max_w + max_h + symmetry)
     opt.minimize(length)
 
     # maximum time of execution
