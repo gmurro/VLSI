@@ -85,31 +85,38 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     time = 300000
     opt.set(timeout=time)
 
+    p_x_sol = []
+    p_y_sol = []
+    length_sol = ""
     # solving the problem
     if opt.check() == sat:
+        msg = "Solved"
         model = opt.model()
-        print(model)
-        print(int(model.evaluate(length).as_string()))
+        for i in range(n):
+            p_x_sol.append(model.evaluate(p_x[i]).as_string())
+            p_y_sol.append(model.evaluate(p_y[i]).as_string())
+        length_sol = model.evaluate(length).as_string()
     elif opt.reason_unknown() == "timeout":
-        print("Solver timeout")
+        msg = "Solver timeout"
     else:
-        print("Unsatisfiable")
-
+        msg = "Unsatisfiable"
+    return msg, p_x_sol, p_y_sol, length_sol
 
 def main():
-    w = 31
-    n = 19
-    x = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 12]
-    y = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 22, 31, 3, 7, 8, 13, 31]
-    l_max = 217
-    mag_w = 100
+    w = 8
+    n = 4
+    x = [3, 3, 5, 5]
+    y = [3, 5, 3, 5]
+    l_max = 16
+    mag_w = 10
     start_time = time.time()
     solve_instance(w, n, x, y, l_max, mag_w)
     end_time = time.time() - start_time
     print(end_time)
 
 
-main()
+if __name__ == '__main__':
+    main()
 
 
 
