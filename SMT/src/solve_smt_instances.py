@@ -29,7 +29,7 @@ def read_file(input_filename):
         len_w = len(str(w))
         mag_w = 10 ** len_w
 
-        return w, n, x, y, l_max, mag_w
+        return int(w), int(n), x, y, l_max, mag_w
 
 
 def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
@@ -76,7 +76,11 @@ def main():
         print(f'{elapsed_time * 1000:.1f} ms')
 
         # storing the output with the standard format
-        write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file)
+        if msg == "Solved":
+            write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file)
+        else:
+            with open(out_file, 'w+') as f_out:
+                f_out.write('{}\n'.format(msg))
 
 
 if __name__ == '__main__':
