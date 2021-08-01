@@ -5,7 +5,24 @@ import time
 import model as md
 
 
-def solve_instance(w, n, x, y, l_max, mag_w):
+def write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length, out_file):
+
+    with open(out_file, 'w+') as f_out:
+
+        f_out.write('{} {}\n'.format(w, length))
+        f_out.write('{}\n'.format(n))
+
+        for i in range(n):
+            f_out.write('{} {} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i], rot_sol[i]))
+
+
+def solve_instance(in_file, out_dir):
+
+    instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
+    instance_name = instance_name[:len(instance_name) - 4]
+    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+
+    w, n, x, y, l_max, mag_w = md.read_file(in_file)
 
     # index of the circuit with the highest value
     index = np.argmax(np.asarray(y))
@@ -22,9 +39,9 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     # rotation array
     rotation = [Bool("rot_%s" % str(i+1)) for i in range(n)]
 
-    # real dimensions of points considering rotation
-    x_r = [Int("x_r_%s" % str(i+1)) for i in range(n)]
-    y_r = [Int("y_r_%s" % str(i+1)) for i in range(n)]
+    # real dimensions of circuits considering rotation
+    x_r = [If(And(x[i] != y[i], rotation[i]), y[i], x[i]) for i in range(n)]
+    y_r = [If(And(x[i] != y[i], rotation[i]), x[i], y[i]) for i in range(n)]
 
     # maximum height to minimize
     length = Int("length")
@@ -35,11 +52,7 @@ def solve_instance(w, n, x, y, l_max, mag_w):
 
     # lengths bound
     width_bound = [And(x_r[i] >= 1, x_r[i] <= w) for i in range(n)]
-    heigth_bound = [And(y_r[i] >= 1, y_r[i] <= l_max) for i in range(n)]
-
-    # relationship between rotation and dimensions
-    rotation_rel = [If(rotation[i], And(x_r[i] == y[i], y_r[i] == x[i]), And(x_r[i] == x[i], y_r[i] == y[i]))
-                    for i in range(n)]
+    height_bound = [And(y_r[i] >= 1, y_r[i] <= l_max) for i in range(n)]
 
     # different coordinates
     all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
@@ -48,14 +61,14 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     objective = [length == md.z3_max([p_y[i] + y[i] for i in range(n)])]
 
     # cumulative constraints
-    cumulative_y = md.z3_cumulative(p_y, y, x, w)
-    cumulative_x = md.z3_cumulative(p_x, x, y, l_max)
+    cumulative_y = md.z3_cumulative(p_y, y_r, x_r, w)
+    cumulative_x = md.z3_cumulative(p_x, x_r, y_r, l_max)
 
     # maximum width
-    max_w = [md.z3_max([p_x[i] + x[i] for i in range(n)]) <= w]
+    max_w = [md.z3_max([p_x[i] + x_r[i] for i in range(n)]) <= w]
 
     # maximum height
-    max_h = [md.z3_max([p_y[i] + y[i] for i in range(n)]) <= l_max]
+    max_h = [md.z3_max([p_y[i] + y_r[i] for i in range(n)]) <= l_max]
 
     # relationship avoiding overlapping
     '''overlapping = [Or(p_x[i] + x[i] <= p_x[j],
@@ -64,13 +77,11 @@ def solve_instance(w, n, x, y, l_max, mag_w):
                               p_y[j] + y[j] <= p_y[i]) for j in range(n) for i in range(j)]'''
     overlapping = []
     for (i,j) in combinations(range(n),2):
-        overlapping.append(Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i])
+        overlapping.append(Or(p_x[i] + x_r[i] <= p_x[j],
+                              p_x[j] + x_r[j] <= p_x[i],
+                              p_y[i] + y_r[i] <= p_y[j],
+                              p_y[j] + y_r[j] <= p_y[i])
                            )
-
-    # cumulative constraints
 
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
     symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
@@ -82,44 +93,54 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     # setting the optimizer
     opt = Optimize()
     opt.add(domain_x + domain_y + overlapping + all_different + objective + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry + left + width_bound + heigth_bound + rotation_rel)
+            cumulative_y + max_w + max_h + symmetry + width_bound + height_bound + left)
     opt.minimize(length)
 
     # maximum time of execution
-    time = 300000
-    opt.set(timeout=time)
+    timeout = 300000
+    opt.set(timeout=timeout)
 
     p_x_sol = []
     p_y_sol = []
     rot_sol = []
-    length_sol = ""
+
     # solving the problem
+
+    print(f'{out_file}:', end='\t', flush=True)
+    start_time = time.time()
+
     if opt.check() == sat:
-        msg = "Solved"
         model = opt.model()
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        # getting values of variables
         for i in range(n):
             p_x_sol.append(model.evaluate(p_x[i]).as_string())
             p_y_sol.append(model.evaluate(p_y[i]).as_string())
-            rot_sol.append(str(model.evaluate(rotation[i])))
+            rot_value = model[rotation[i]]
+            if rot_value == None:
+                rot_sol.append(False)
+            else:
+                rot_sol.append(rot_value)
         length_sol = model.evaluate(length).as_string()
+
+        # storing result
+        write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length_sol, out_file)
+
     elif opt.reason_unknown() == "timeout":
-        msg = "Solver timeout"
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        print("Timeout")
     else:
-        msg = "Unsatisfiable"
-    return msg, p_x_sol, p_y_sol, length_sol
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        print("Unsatisfiable")
 
 
 def main():
-    w = 8
-    n = 4
-    x = [3, 3, 5, 5]
-    y = [3, 5, 3, 5]
-    l_max = 16
-    mag_w = 10
-    start_time = time.time()
-    msg, p_x_sol, p_y_sol, length_sol = solve_instance(w, n, x, y, l_max, mag_w)
-    end_time = time.time() - start_time
-    print(end_time)
+    in_file = "..\..\data\instances_txt\ins-3.txt"
+    out_dir = "out_rotation"
+    solve_instance(in_file, out_dir)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,43 @@ from itertools import combinations
 import time
 
 
+def read_file(input_filename):
+
+    with open(input_filename, 'r') as f_in:
+
+        lines = f_in.read().splitlines()
+
+        w = lines[0]
+        n = lines[1]
+
+        x = []
+        y = []
+
+        for i in range(int(n)):
+            split = lines[i + 2].split(' ')
+            x.append(int(split[0]))
+            y.append(int(split[1]))
+
+        l_max = sum(y)
+
+        # compute order of magnitude of w
+        len_w = len(str(w))
+        mag_w = 10 ** len_w
+
+        return int(w), int(n), x, y, l_max, mag_w
+
+
+def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
+
+    with open(out_file, 'w+') as f_out:
+
+        f_out.write('{} {}\n'.format(w, length))
+        f_out.write('{}\n'.format(n))
+
+        for i in range(n):
+            f_out.write('{} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i]))
+
+
 def z3_max(vector):
     maximum = vector[0]
     for value in vector[1:]:
@@ -22,7 +59,13 @@ def z3_cumulative(start, duration, resources, total):
     return decomposition
 
 
-def solve_instance(w, n, x, y, l_max, mag_w):
+def solve_instance(in_file, out_dir):
+
+    instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
+    instance_name = instance_name[:len(instance_name) - 4]
+    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+
+    w, n, x, y, l_max, mag_w = read_file(in_file)
 
     # index of the circuit with the highest value
     index = np.argmax(np.asarray(y))
@@ -69,8 +112,6 @@ def solve_instance(w, n, x, y, l_max, mag_w):
                               p_y[j] + y[j] <= p_y[i])
                            )
 
-    # cumulative constraints
-
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
     symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
 
@@ -81,38 +122,45 @@ def solve_instance(w, n, x, y, l_max, mag_w):
     opt.minimize(length)
 
     # maximum time of execution
-    time = 300000
-    opt.set(timeout=time)
+    timeout = 300000
+    opt.set(timeout=timeout)
 
     p_x_sol = []
     p_y_sol = []
-    length_sol = ""
+
     # solving the problem
+
+    print(f'{out_file}:', end='\t', flush=True)
+    start_time = time.time()
+
     if opt.check() == sat:
-        msg = "Solved"
         model = opt.model()
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        # getting values of variables
         for i in range(n):
             p_x_sol.append(model.evaluate(p_x[i]).as_string())
             p_y_sol.append(model.evaluate(p_y[i]).as_string())
         length_sol = model.evaluate(length).as_string()
+
+        # storing result
+        write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
+
     elif opt.reason_unknown() == "timeout":
-        msg = "Solver timeout"
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        print("Timeout")
     else:
-        msg = "Unsatisfiable"
-    return msg, p_x_sol, p_y_sol, length_sol
+        elapsed_time = time.time() - start_time
+        print(f'{elapsed_time * 1000:.1f} ms')
+        print("Unsatisfiable")
 
 
 def main():
-    w = 8
-    n = 4
-    x = [3, 3, 5, 5]
-    y = [3, 5, 3, 5]
-    l_max = 16
-    mag_w = 10
-    start_time = time.time()
-    solve_instance(w, n, x, y, l_max, mag_w)
-    end_time = time.time() - start_time
-    print(end_time)
+
+    in_file = "..\..\data\instances_txt\ins-2.txt"
+    out_dir = "out"
+    solve_instance(in_file, out_dir)
 
 
 if __name__ == '__main__':

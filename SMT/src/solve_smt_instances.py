@@ -1,46 +1,8 @@
-from time import time
 import argparse
 from glob import glob
-import os
 import model as md
+import model_rotation as mdr
 from z3 import *
-
-
-def read_file(input_filename):
-
-    with open(input_filename, 'r') as f_in:
-
-        lines = f_in.read().splitlines()
-
-        w = lines[0]
-        n = lines[1]
-
-        x = []
-        y = []
-
-        for i in range(int(n)):
-            split = lines[i + 2].split(' ')
-            x.append(int(split[0]))
-            y.append(int(split[1]))
-
-        l_max = sum(y)
-
-        # compute order of magnitude of w
-        len_w = len(str(w))
-        mag_w = 10 ** len_w
-
-        return int(w), int(n), x, y, l_max, mag_w
-
-
-def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
-
-    with open(out_file, 'w+') as f_out:
-
-        f_out.write('{} {}\n'.format(w, length))
-        f_out.write('{}\n'.format(n))
-
-        for i in range(n):
-            f_out.write('{} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i]))
 
 
 def main():
@@ -59,28 +21,17 @@ def main():
     out_dir = args.out_dir
     rotation = args.rotation if args.rotation is not None else 0
 
-    for in_file in glob(os.path.join(in_dir, '*.txt')):
+    if rotation == 0:
 
-        instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
-        instance_name = instance_name[:len(instance_name) - 4]
-        out_file = os.path.join(out_dir, instance_name + '-out.txt')
+        # rotation model has been enabled
+        for in_file in glob(os.path.join(in_dir, '*.txt')):
+            mdr.solve_instance(in_file, out_dir)
 
-        # reading data from the file
-        w, n, x, y, l_max, mag_w = read_file(in_file)
+    else:
 
-        # solving the current instance
-        print(f'{out_file}:', end='\t', flush=True)
-        start_time = time()
-        msg, p_x_sol, p_y_sol, length = md.solve_instance(w, n, x, y, l_max, mag_w)
-        elapsed_time = time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-
-        # storing the output with the standard format
-        if msg == "Solved":
-            write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file)
-        else:
-            with open(out_file, 'w+') as f_out:
-                f_out.write('{}\n'.format(msg))
+        # running standard model
+        for in_file in glob(os.path.join(in_dir, '*.txt')):
+            md.solve_instance(in_file, out_dir)
 
 
 if __name__ == '__main__':

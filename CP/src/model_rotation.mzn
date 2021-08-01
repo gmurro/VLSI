@@ -40,6 +40,9 @@ array[CIRCUITS] of int: area = [ x[i] * y[i] | i in CIRCUITS];
 % order of magnitude of w
 int: mag_w;
 
+% circuit with the maximum height
+int: index = arg_max(y);
+
 
 % definition of the variables
 
@@ -79,9 +82,9 @@ constraint cumulative(p_y, y_r, x_r, w);
 constraint cumulative(p_x, x_r, y_r, l_max);
 
 % symmetry breaking constraint
-%constraint symmetry_breaking_constraint(
-%  p_x[index] == 0 /\ p_y[index] == 0
-%);
+constraint symmetry_breaking_constraint(
+  p_x[index] == 0 /\ p_y[index] == 0
+);
 
 % higher density on the left wrt the right
 %constraint symmetry_breaking_constraint(
