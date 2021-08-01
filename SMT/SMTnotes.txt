@@ -1,1 +1,1 @@
-SMT
+python solve_smt_instances.py --in_dir ..\..\data\instances_txt --out_dir out [-r]
