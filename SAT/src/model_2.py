@@ -100,30 +100,65 @@ def solve_instance(in_file, out_dir):
                 circuit_positioning = []
 
                 # Iterate over the cells of circuit's patch
+                for oy in range(l_max):
+                    for ox in range(w):
+                        if i <= oy < i + y_k and j <= ox < j + x_k:
+                            circuit_positioning.append(plate[oy][ox][k])
+                        else:
+                            circuit_positioning.append(Not(plate[oy][ox][k]))
+
+                """               
                 for oy in range(i, i+y_k):
                     for ox in range(j, j+x_k):
-                        circuit_positioning.append(plate[oy][ox][k])
+                        circuit_positioning.append(plate[oy][ox][k])"""
 
-                all_circuit_positions.append(And(circuit_positioning))
+                all_circuit_positions.append(And(*circuit_positioning))
 
-    # Exactly one
-    solver.add(at_least_one(all_circuit_positions))
-    solver.add(at_most_one(all_circuit_positions))
+        # Exactly one
+        solver.add(at_least_one(all_circuit_positions))
+        solver.add(at_most_one(all_circuit_positions))
 
     # compute the length
-    #solver.add([l[i] == And( [Or(list(np.concatenate(plate[i]).flat) )] + [Not(Or( list(np.concatenate(plate[j]).flat))) for j in range(i+1, l_max)]) for i in range(l_max)])
+    solver.add([l[i] == And( [Or(list(np.concatenate(plate[i]).flat) )] + [Not(Or( list(np.concatenate(plate[j]).flat))) for j in range(i+1, l_max)]) for i in range(l_max)])
 
     # value of length
     #objective = [length == z3_max([k + y[i] if p_y[i][k] is True else None for k in range(l_max - min(y)) for i in range(n)])]
 
 
     # maximum time of execution
-    timeout = 300000
-    solver.set(timeout=timeout)
+    #timeout = 300000
+    #solver.set(timeout=timeout)
 
-    p_x_sol = []
-    p_y_sol = []
+    solver.push()
+    i = 0
+    while solver.check() == sat and (i < 5):
+        model = solver.model()
+        for k in range(l_max):
+            if model.evaluate(l[k]):
+                print(k)
+                length = k
 
+        sol = np.zeros((l_max, w))
+
+        for k in range(n):
+
+            sol_2 = []
+            for i in range(l_max):
+                sol_2.append([])
+                for j in range(w):
+                    if model.evaluate(plate[i][j][k]):
+                        sol_2[i].append(1)
+                        sol[i][j] = k
+                    else:
+                        sol_2[i].append(0)
+
+            plt.imshow(sol_2)
+            plt.show()
+        solver.add(at_least_one([l[i] for i in range(length)]))  # prevent next model from using the same assignment as a previous model
+        i += 1
+    solver.pop()
+
+'''
     # solving the problem
 
     print(f'{out_file}:', end='\t', flush=True)
@@ -141,19 +176,27 @@ def solve_instance(in_file, out_dir):
                     if model.evaluate(plate[i][j][k]):
                         sol[i].append(k + 1)"""
 
+        sol = np.zeros((l_max, w))
 
         for k in range(n):
-            sol = []
+            sol_2 = []
             for i in range(l_max):
-                sol.append([])
+                sol_2.append([])
                 for j in range(w):
                     if model.evaluate(plate[i][j][k]):
-                        sol[i].append(1)
+                        sol_2[i].append(1)
+                        sol[i][j] = k
                     else:
-                        sol[i].append(0)
+                        sol_2[i].append(0)
 
-            plt.imshow(sol)
+            plt.imshow(sol_2)
             plt.show()
+
+
+        for k in range(l_max):
+            if model.evaluate(l[k]):
+                print(k)
+
 
 
 
@@ -171,96 +214,7 @@ def solve_instance(in_file, out_dir):
         elapsed_time = time.time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
         print("Unsatisfiable")
-
-
-
-    """
-    # index of the circuit with the highest value
-    index = np.argmax(np.asarray(y))
-
-    # coordinates of the points
-    p_x = [Int("p_x_%s" % str(i+1)) for i in range(n)]
-    p_y = [Int("p_y_%s" % str(i+1)) for i in range(n)]
-
-    # maximum height to minimize
-    length = Int("length")
-
-    # domain bounds
-    domain_x = [And(p_x[i] >= 0,p_x[i] <= w-min(x)) for i in range(n)]
-    domain_y = [And(p_y[i] >= 0,p_y[i] <= l_max-min(y)) for i in range(n)]
-
-    # different coordinates
-    all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
-
-    # value of l
-    objective = [length == z3_max([p_y[i] + y[i] for i in range(n)])]
-
-    # cumulative constraints
-    cumulative_y = z3_cumulative(p_y, y, x, w)
-    cumulative_x = z3_cumulative(p_x, x, y, l_max)
-
-    # maximum width
-    max_w = [z3_max([p_x[i] + x[i] for i in range(n)]) <= w]
-
-    # maximum height
-    max_h = [z3_max([p_y[i] + y[i] for i in range(n)]) <= l_max]
-
-    # relationship avoiding overlapping
-    '''overlapping = [Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i]) for j in range(n) for i in range(j)]'''
-    overlapping = []
-    for (i,j) in combinations(range(n),2):
-        overlapping.append(Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i])
-                           )
-
-    # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
-    symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
-
-    # setting the optimizer
-    opt = Optimize()
-    opt.add(domain_x + domain_y + overlapping + all_different + objective + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry)
-    opt.minimize(length)
-
-    # maximum time of execution
-    timeout = 300000
-    opt.set(timeout=timeout)
-
-    p_x_sol = []
-    p_y_sol = []
-
-    # solving the problem
-
-    print(f'{out_file}:', end='\t', flush=True)
-    start_time = time.time()
-
-    if opt.check() == sat:
-        model = opt.model()
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        # getting values of variables
-        for i in range(n):
-            p_x_sol.append(model.evaluate(p_x[i]).as_string())
-            p_y_sol.append(model.evaluate(p_y[i]).as_string())
-        length_sol = model.evaluate(length).as_string()
-
-        # storing result
-        write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
-
-    elif opt.reason_unknown() == "timeout":
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Timeout")
-    else:
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Unsatisfiable")
-    """
+'''
 
 def main():
 
