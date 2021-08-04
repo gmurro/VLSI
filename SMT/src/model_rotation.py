@@ -115,7 +115,7 @@ def solve_instance(in_file, out_dir):
             p_x_sol.append(model.evaluate(p_x[i]).as_string())
             p_y_sol.append(model.evaluate(p_y[i]).as_string())
             rot_value = model[rotation[i]]
-            if rot_value == None:
+            if rot_value is None:
                 rot_sol.append(False)
             else:
                 rot_sol.append(rot_value)
