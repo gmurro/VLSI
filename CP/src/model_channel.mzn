@@ -49,7 +49,6 @@ array[0..w-1,0..l_max-1] of var VALUES: board;
 
 
 % all coordinates must be different
-
 constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 
 % maximum width
@@ -62,7 +61,7 @@ constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x[i] <= p_x[j] \/ p_x[j] + x[j] <= p_x[i] \/ p_y[i] + y[i] <= p_y[j] \/ p_y[j] + y[j] <= p_y[i]);
 
 
-% considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
+% considering each circuit as an activity whose duration is the vertical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
 

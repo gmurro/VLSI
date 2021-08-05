@@ -6,9 +6,7 @@ from tqdm import tqdm
 
 
 def read_file(input_filename):
-
     with open(input_filename, 'r') as f_in:
-
         lines = f_in.read().splitlines()
 
         w = lines[0]
@@ -32,9 +30,7 @@ def read_file(input_filename):
 
 
 def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
-
     with open(out_file, 'w+') as f_out:
-
         f_out.write('{} {}\n'.format(w, length))
         f_out.write('{}\n'.format(n))
 
@@ -47,6 +43,17 @@ def z3_max(vector):
     for value in vector[1:]:
         maximum = If(value > maximum, value, maximum)
     return maximum
+
+
+def z3_lex_lesseq(x, y, n):
+    return And([Or([y[0][k] == at_least_one([x[0][j] for j in range(k + 1)]) for k in range(n)])] +
+               [
+                   Implies(
+                       And([And([eq(x[j][k], y[j][k]) for k in range(n)]) for j in range(i)]),
+                       Or([y[i][k] == at_least_one([x[i][j] for j in range(k + 1)]) for k in range(n)])
+                   )
+                   for i in tqdm(range(1, len(x)), desc="Constraint 5: simmetry breaking")
+               ])
 
 
 def at_least_one(bool_vars):
@@ -81,7 +88,6 @@ def model_to_coordinates(model, p, w, l, n):
 
 
 def solve_instance(in_file, out_dir):
-
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
     out_file = os.path.join(out_dir, instance_name + '-out.txt')
@@ -93,7 +99,6 @@ def solve_instance(in_file, out_dir):
     w_blocks = w // max_x
     l_max = -(l_max // -w_blocks)
     l_max = max_y if l_max < max_y else l_max
-
 
     ''' DEFINITION OF THE VARIABLES '''
 
@@ -109,14 +114,14 @@ def solve_instance(in_file, out_dir):
 
     # 1 - CONSTRAINT
     # Each cell in the plate has at most one value
-    at_most_one_value_cell = []
-    for i in tqdm(range(l_max), desc='Constraint 1: at most one value cell'):
+    no_overlapping = []
+    for i in tqdm(range(l_max), desc='Constraint 1: no overlapping between circuits'):
         for j in range(w):
-            at_most_one_value_cell += at_most_one(p[i][j])
+            no_overlapping += at_most_one(p[i][j])
 
     # 2 - CONSTRAINT
     # Iterate over all the n circuits
-    one_circuit_positioning = []
+    exactly_one_circuit_positioning = []
     for k in tqdm(range(n), desc='Constraint 2: exactly one circuit positioning'):
         x_k = x[k]
         y_k = y[k]
@@ -142,7 +147,7 @@ def solve_instance(in_file, out_dir):
                 all_circuit_positions.append(And(circuit_positioning))
 
         # Exactly one
-        one_circuit_positioning += exactly_one(all_circuit_positions)
+        exactly_one_circuit_positioning += exactly_one(all_circuit_positions)
 
     # 3 - CONSTRAINT
     # one-hot encoding of the length
@@ -150,8 +155,27 @@ def solve_instance(in_file, out_dir):
 
     # 4 - CONSTRAINT
     # compute the length consistent wrt the actual circuits positioning
-    length_circuits_positioning = [ l[i] == And( [Or(flat(p[i]))] + [Not(Or(flat(p[j]))) for j in range(i + 1, l_max)] )
-                                                                                        for i in tqdm(range(l_max), desc='Constraint 4: length consistent wrt circuits positioning') ]
+    length_circuits_positioning = [l[i] == And([Or(flat(p[i]))] + [Not(Or(flat(p[j]))) for j in range(i + 1, l_max)])
+                                   for i in
+                                   tqdm(range(l_max), desc='Constraint 4: length consistent wrt circuits positioning')]
+
+    """"# 5 - CONSTRAINT
+    # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
+    max_y = np.argmax(y)
+    highest_circuit_first = [
+        And([p[i][j][k] if k == max_y else Not(p[i][j][k]) for k in range(n) for j in range(x[max_y]) for i in
+             tqdm(range(y[max_y]), desc='Constraint 5: set highest circuit first')])]"""
+
+    # 5 - CONSTRAINT
+    # simmetry breaking constraint: remove horizontal flip, vertical flip and 180° rotation
+    simmetry_breaking = [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
+                              [p[i][j] for j in range(w) for i in reversed(range(l_max))], n)]
+
+    simmetry_breaking += [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in range(l_max)], n)]
+
+    simmetry_breaking += [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in reversed(range(l_max))], n)]
 
     ''' SETTING THE SOLVER '''
     solver = Solver()
@@ -159,13 +183,14 @@ def solve_instance(in_file, out_dir):
     print('Adding constraints...')
 
     # add constraints
-    solver.add(at_most_one_value_cell)
-    solver.add(one_circuit_positioning)
+    solver.add(no_overlapping)
+    solver.add(exactly_one_circuit_positioning)
     solver.add(one_hot_length)
     solver.add(length_circuits_positioning)
+    solver.add(simmetry_breaking)
 
     # maximum time of execution
-    timeout = 30000000
+    timeout = 300000
     solver.set(timeout=timeout)
 
     ''' SOLVING THE PROBLEM '''
@@ -177,6 +202,7 @@ def solve_instance(in_file, out_dir):
     # utility variable to check if at least a solution is computed before reaching the timeout
     at_least_one_solution = False
 
+    # check the model until the minimal length is reached
     while True:
         if solver.check() == sat:
 
@@ -185,7 +211,8 @@ def solve_instance(in_file, out_dir):
                 if model.evaluate(l[k]):
                     length_sol = k
 
-            solver.add(at_least_one([l[i] for i in range(length_sol)]))  # prevent next model from using the same assignment as a previous model
+            # prevent next model from using the same assignment as a previous model
+            solver.add(at_least_one([l[i] for i in range(length_sol)]))
 
             at_least_one_solution = True
 
@@ -207,10 +234,12 @@ def solve_instance(in_file, out_dir):
 
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
+    else:
+        print("Unsatisfiable problem")
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-14.txt"
+    in_file = "..\..\data\instances_txt\ins-11.txt"
     out_dir = "out"
     solve_instance(in_file, out_dir)
 
