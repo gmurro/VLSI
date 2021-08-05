@@ -2,6 +2,8 @@ from z3 import *
 import numpy as np
 from itertools import combinations
 import time
+from tqdm import tqdm
+
 
 def read_file(input_filename):
 
@@ -58,6 +60,26 @@ def at_most_one(bool_vars):
 def exactly_one(bool_vars):
     return at_most_one(bool_vars) + [at_least_one(bool_vars)]
 
+
+def flat(list_of_lists):
+    return list(np.concatenate(list_of_lists).flat)
+
+
+def model_to_coordinates(model, p, w, l, n):
+    # Create solution array
+    solution = np.array([[[is_true(model[p[i][j][k]]) for k in range(n)] for j in range(w)] for i in range(l)])
+
+    p_x_sol = []
+    p_y_sol = []
+    for c in range(n):
+        y_ids, x_ids = solution[:, :, c].nonzero()
+        x = np.min(x_ids)
+        y = np.min(y_ids)
+        p_x_sol.append(x)
+        p_y_sol.append(y)
+    return p_x_sol, p_y_sol
+
+
 def solve_instance(in_file, out_dir):
 
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
@@ -66,163 +88,129 @@ def solve_instance(in_file, out_dir):
 
     w, n, x, y, l_max, mag_w = read_file(in_file)
 
-    # definition of the variables
+    max_x = max(x)
+    max_y = max(y)
+    w_blocks = w // max_x
+    l_max = -(l_max // -w_blocks)
+    l_max = max_y if l_max < max_y else l_max
 
-    # coordinates of the points
-    p_x = [[Bool(f"p_x_{i}_{k}") for k in range(w - min(x))] for i in range(n)]
-    p_y = [[Bool(f"p_y_{i}_{k}") for k in range(l_max - min(y))] for i in range(n)]
 
-    # maximum height to minimize
+    ''' DEFINITION OF THE VARIABLES '''
+
+    # plate of boolean variables
+    p = [[[Bool(f"p_{i}_{j}_{k}") for k in range(n)] for j in range(w)] for i in range(l_max)]
+
+    # length of the plate to minimize (one-hot representation)
     l = [Bool(f"l_{i}") for i in range(l_max)]
 
-    # Each coordinate has only one value
-    only_one_value_coordinates = []
-    for i in range(n):
-        only_one_value_coordinates += exactly_one([p_x[i][k] for k in range(w - min(x))])
-        only_one_value_coordinates += exactly_one([p_y[i][k] for k in range(l_max - min(y))])
+    ''' DEFINITION OF THE CONSTRAINTS '''
 
-    # unicity lenght
-    exacly_one_length = exactly_one([l[i] for i in range(l_max)])
+    print('Defining constraints...')
 
+    # 1 - CONSTRAINT
+    # Each cell in the plate has at most one value
+    at_most_one_value_cell = []
+    for i in tqdm(range(l_max), desc='Constraint 1: at most one value cell'):
+        for j in range(w):
+            at_most_one_value_cell += at_most_one(p[i][j])
 
-    # value of length
-    print([k + y[i] if p_y[i][k]  else None for k in range(l_max - min(y)) for i in range(n)])
-    objective = [length == z3_max([k + y[i] if p_y[i][k] is True else None for k in range(l_max - min(y)) for i in range(n)])]
+    # 2 - CONSTRAINT
+    # Iterate over all the n circuits
+    one_circuit_positioning = []
+    for k in tqdm(range(n), desc='Constraint 2: exactly one circuit positioning'):
+        x_k = x[k]
+        y_k = y[k]
 
+        # clause containing all possible positions of each circuit into the plate
+        all_circuit_positions = []
 
+        # Iterate over all the coordinates where p can fit
+        for i in range(l_max - y_k + 1):
+            for j in range(w - x_k + 1):
 
-    # setting the optimizer
-    opt = Optimize()
-    opt.add(only_one_value_coordinates + objective)
-    opt.minimize(length)
+                # all cells corresponding to the circuit position
+                circuit_positioning = []
+
+                # Iterate over the cells of circuit's patch
+                for oy in range(l_max):
+                    for ox in range(w):
+                        if i <= oy < i + y_k and j <= ox < j + x_k:
+                            circuit_positioning.append(p[oy][ox][k])
+                        else:
+                            circuit_positioning.append(Not(p[oy][ox][k]))
+
+                all_circuit_positions.append(And(circuit_positioning))
+
+        # Exactly one
+        one_circuit_positioning += exactly_one(all_circuit_positions)
+
+    # 3 - CONSTRAINT
+    # one-hot encoding of the length
+    one_hot_length = exactly_one([l[i] for i in tqdm(range(l_max), desc='Constraint 3: one hot encoding length')])
+
+    # 4 - CONSTRAINT
+    # compute the length consistent wrt the actual circuits positioning
+    length_circuits_positioning = [ l[i] == And( [Or(flat(p[i]))] + [Not(Or(flat(p[j]))) for j in range(i + 1, l_max)] )
+                                                                                        for i in tqdm(range(l_max), desc='Constraint 4: length consistent wrt circuits positioning') ]
+
+    ''' SETTING THE SOLVER '''
+    solver = Solver()
+
+    print('Adding constraints...')
+
+    # add constraints
+    solver.add(at_most_one_value_cell)
+    solver.add(one_circuit_positioning)
+    solver.add(one_hot_length)
+    solver.add(length_circuits_positioning)
 
     # maximum time of execution
-    timeout = 300000
-    opt.set(timeout=timeout)
+    timeout = 30000000
+    solver.set(timeout=timeout)
 
-    p_x_sol = []
-    p_y_sol = []
-
-    # solving the problem
+    ''' SOLVING THE PROBLEM '''
+    print('Checking the model...')
 
     print(f'{out_file}:', end='\t', flush=True)
     start_time = time.time()
 
-    if opt.check() == sat:
-        model = opt.model()
+    # utility variable to check if at least a solution is computed before reaching the timeout
+    at_least_one_solution = False
+
+    while True:
+        if solver.check() == sat:
+
+            model = solver.model()
+            for k in range(l_max):
+                if model.evaluate(l[k]):
+                    length_sol = k
+
+            solver.add(at_least_one([l[i] for i in range(length_sol)]))  # prevent next model from using the same assignment as a previous model
+
+            at_least_one_solution = True
+
+        elif solver.reason_unknown() == "timeout":
+            print("Timeout reached, no optimal solution provided")
+            break
+        else:
+            # break when it is impossible to improve anymore the length
+            break
+
+    if at_least_one_solution:
+        length_sol += 1
+
         elapsed_time = time.time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
-        # getting values of variables
-        for i in range(n):
-            p_x_sol.append(model.evaluate(p_x[i]).as_string())
-            p_y_sol.append(model.evaluate(p_y[i]).as_string())
-        length_sol = model.evaluate(length).as_string()
+
+        print(f"The minimal length is {length_sol}")
+        p_x_sol, p_y_sol = model_to_coordinates(model, p, w, length_sol, n)
 
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
 
-    elif opt.reason_unknown() == "timeout":
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Timeout")
-    else:
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Unsatisfiable")
-
-
-
-    """
-    # index of the circuit with the highest value
-    index = np.argmax(np.asarray(y))
-
-    # coordinates of the points
-    p_x = [Int("p_x_%s" % str(i+1)) for i in range(n)]
-    p_y = [Int("p_y_%s" % str(i+1)) for i in range(n)]
-
-    # maximum height to minimize
-    length = Int("length")
-
-    # domain bounds
-    domain_x = [And(p_x[i] >= 0,p_x[i] <= w-min(x)) for i in range(n)]
-    domain_y = [And(p_y[i] >= 0,p_y[i] <= l_max-min(y)) for i in range(n)]
-
-    # different coordinates
-    all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
-
-    # value of l
-    objective = [length == z3_max([p_y[i] + y[i] for i in range(n)])]
-
-    # cumulative constraints
-    cumulative_y = z3_cumulative(p_y, y, x, w)
-    cumulative_x = z3_cumulative(p_x, x, y, l_max)
-
-    # maximum width
-    max_w = [z3_max([p_x[i] + x[i] for i in range(n)]) <= w]
-
-    # maximum height
-    max_h = [z3_max([p_y[i] + y[i] for i in range(n)]) <= l_max]
-
-    # relationship avoiding overlapping
-    '''overlapping = [Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i]) for j in range(n) for i in range(j)]'''
-    overlapping = []
-    for (i,j) in combinations(range(n),2):
-        overlapping.append(Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i])
-                           )
-
-    # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
-    symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
-
-    # setting the optimizer
-    opt = Optimize()
-    opt.add(domain_x + domain_y + overlapping + all_different + objective + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry)
-    opt.minimize(length)
-
-    # maximum time of execution
-    timeout = 300000
-    opt.set(timeout=timeout)
-
-    p_x_sol = []
-    p_y_sol = []
-
-    # solving the problem
-
-    print(f'{out_file}:', end='\t', flush=True)
-    start_time = time.time()
-
-    if opt.check() == sat:
-        model = opt.model()
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        # getting values of variables
-        for i in range(n):
-            p_x_sol.append(model.evaluate(p_x[i]).as_string())
-            p_y_sol.append(model.evaluate(p_y[i]).as_string())
-        length_sol = model.evaluate(length).as_string()
-
-        # storing result
-        write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
-
-    elif opt.reason_unknown() == "timeout":
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Timeout")
-    else:
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Unsatisfiable")
-    """
 
 def main():
-
-    in_file = "..\..\data\instances_txt\ins-1.txt"
+    in_file = "..\..\data\instances_txt\ins-14.txt"
     out_dir = "out"
     solve_instance(in_file, out_dir)
 

@@ -2,12 +2,12 @@ import argparse
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 import numpy as np
-import sys
+from matplotlib import cm
 from os import path
 
 
 # Define function to plot the solution
-def plot_solution(w_plate, h_plate, n, circuits, solution, colors=None):
+def plot_solution(w_plate, h_plate, n, circuits, solution, legend=True, colors=None, save_fig_path=None):
     """
     Show the given solution as a 2D plot.
     The solution should be a list of bottom left corners,
@@ -23,28 +23,51 @@ def plot_solution(w_plate, h_plate, n, circuits, solution, colors=None):
 
     corners = solution['corners']
 
-    # get n random colors if they are not passed as parameter
+    # get n colors if they are not passed as parameter
     if colors is None:
-        colors = np.random.rand(n, 3)
+        colors = cm.gist_rainbow(np.linspace(0, 1, n))
 
     fig, ax = plt.subplots(facecolor='w', edgecolor='k')
 
     for i in range(n):
-        ax.add_patch(Rectangle(
+        r = Rectangle(
             corners[i],
             circuits[i][0],
             circuits[i][1],
-            facecolor=colors[i]
-        ))
+            facecolor=colors[i],
+            edgecolor='black',
+            label=f'circuit {i+1}'
+        )
+        ax.add_patch(r)
+
+        # plot in each cell the id of the corresponding circuit if you do not want to visualize legend
+        if not legend:
+            rx, ry = r.get_xy()
+            for j in range(r.get_width()):
+                for k in range(r.get_height()):
+                    cx = rx + j + 0.5
+                    cy = ry + k + 0.5
+
+                    ax.annotate(f'{i+1}', (cx, cy), color='black',
+                                fontsize=8, ha='center', va='center')
+
     ax.set_xlim(0, w_plate)
     ax.set_ylim(0, h_plate)
+    ax.set_xticks(np.arange(w_plate))
+    ax.set_yticks(np.arange(h_plate))
     plt.xlabel("width")
     plt.ylabel("height")
     plt.grid(color='black', linestyle='--')
 
-    # TODO insert legend
+    if legend:
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 
-    #plt.savefig(f"plots/{model}/{w_paper}x{h_paper}-sol.png", dpi=300, bbox_inches='tight')
+        # Put a legend to the right of the current axis
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+    if save_fig_path is not None:
+        plt.savefig(f"{save_fig_path}/{w_plate}x{h_plate}-sol.png", dpi=300, bbox_inches='tight')
 
     plt.show()
 
@@ -56,6 +79,7 @@ if __name__ == "__main__":
 
     # Add the arguments to the parser
     parser.add_argument("-f", "--filename", help="Filename of the output of the problem", required=True, type=str)
+    parser.add_argument("-l", "--legend", help="Enable the plot of the legend, otherwise number of circuits are showed directly on the blocks", required=False, action='store_true')
     args = parser.parse_args()
 
     if not path.isfile(args.filename):
@@ -90,4 +114,4 @@ if __name__ == "__main__":
                 circuits.append((int(line[0]), int(line[1])))
                 solution['corners'].append((int(line[2]), int(line[3])))
 
-        plot_solution(width, height, n_circuits, circuits, solution)
+        plot_solution(width, height, n_circuits, circuits, solution, args.legend, save_fig_path="../SAT/src/out")
