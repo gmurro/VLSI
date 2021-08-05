@@ -73,9 +73,9 @@ constraint symmetry_breaking_constraint(
 );
 
 % higher density on the left wrt the right
-%constraint symmetry_breaking_constraint(
-%  sum(i in CIRCUITS where p_x[i] <= w div 2)(area[i]) > sum(i in CIRCUITS where p_x[i] > w div 2)(area[i])
-%);
+constraint symmetry_breaking_constraint(
+  sum(i in CIRCUITS where p_x[i] <= w div 2)(area[i]) > sum(i in CIRCUITS where p_x[i] > w div 2)(area[i])
+);
 
 % Parameters to control the search heuristic and restart strategy
 int: heuristic = 6;

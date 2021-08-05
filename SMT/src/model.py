@@ -77,7 +77,7 @@ def solve_instance(in_file, out_dir):
     p_y = [Int("p_y_%s" % str(i+1)) for i in range(n)]
 
     # maximum height to minimize
-    length = Int("length")
+    length = z3_max([p_y[i] + y[i] for i in range(n)])
 
     # domain bounds
     domain_x = [And(p_x[i] >= 0,p_x[i] <= w-min(x)) for i in range(n)]
@@ -85,9 +85,6 @@ def solve_instance(in_file, out_dir):
 
     # different coordinates
     all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
-
-    # value of l
-    objective = [length == z3_max([p_y[i] + y[i] for i in range(n)])]
 
     # cumulative constraints
     cumulative_y = z3_cumulative(p_y, y, x, w)
@@ -117,7 +114,7 @@ def solve_instance(in_file, out_dir):
 
     # setting the optimizer
     opt = Optimize()
-    opt.add(domain_x + domain_y + overlapping + all_different + objective + cumulative_x +
+    opt.add(domain_x + domain_y + overlapping + all_different + cumulative_x +
             cumulative_y + max_w + max_h + symmetry)
     opt.minimize(length)
 
