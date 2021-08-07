@@ -96,3 +96,9 @@ Solve as many instances as possible in this time range.
 ## Tips Minizinc
 
 ![Tips](./assets/img/IMG_20210717_170723.jpg)  
+
+## TODO
+
+2) SAT implied constraints
+4) symmetries in dual model CP
+5) search
