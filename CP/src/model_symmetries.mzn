@@ -121,7 +121,7 @@ else
   int_search(p_y, dom_w_deg, indomain_random)
 endif;
 
-ann: search_ann_board = 
+ann: search_ann_plate = 
 if heuristic == 1 then
   int_search(array1d(plate), input_order, indomain_min)
 elseif heuristic == 2 then
@@ -151,7 +151,7 @@ endif;
 
 solve :: search_ann_x
       :: search_ann_y
-      :: search_ann_board
+      :: search_ann_plate
       :: restart_ann
          minimize l;
 
