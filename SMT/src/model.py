@@ -155,7 +155,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
 
-    in_file = "..\..\data\instances_txt\ins-2.txt"
+    in_file = "..\..\data\instances_txt\ins-10.txt"
     out_dir = "out"
     solve_instance(in_file, out_dir)
 

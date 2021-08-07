@@ -45,15 +45,34 @@ def z3_max(vector):
     return maximum
 
 
-def z3_lex_lesseq(x, y, n):
-    return And([Or([y[0][k] == at_least_one([x[0][j] for j in range(k + 1)]) for k in range(n)])] +
+def z3_lex_less_eq(x, y, n, desc):
+    return And([z3_less_eq(x[0], y[0])] +
                [
                    Implies(
-                       And([And([eq(x[j][k], y[j][k]) for k in range(n)]) for j in range(i)]),
-                       Or([y[i][k] == at_least_one([x[i][j] for j in range(k + 1)]) for k in range(n)])
+                       And([And([x[j][k] == y[j][k] for k in range(n)]) for j in range(i)]),
+                       z3_less_eq(x[i], y[i])
                    )
-                   for i in tqdm(range(1, len(x)), desc="Constraint 5: simmetry breaking")
+                   for i in tqdm(range(1, len(x)), desc=desc)
                ])
+
+
+def bool_greater_eq(x, y):
+    return Or(x, Not(y))
+
+
+# less_eq between arrays of bool "one-hot" encoded
+# implementation like lexicographical ordering encoding
+def z3_less_eq(x, y):
+    return And(
+            [bool_greater_eq(x[0], y[0])] +
+            [
+                Implies(
+                    And([x[j] == y[j] for j in range(i)]),
+                    bool_greater_eq(x[i], y[i])
+                )
+                for i in range(1, len(x))
+            ]
+    )
 
 
 def at_least_one(bool_vars):
@@ -93,6 +112,7 @@ def solve_instance(in_file, out_dir):
     out_file = os.path.join(out_dir, instance_name + '-out.txt')
 
     w, n, x, y, l_max, mag_w = read_file(in_file)
+
 
     max_x = max(x)
     max_y = max(y)
@@ -159,23 +179,16 @@ def solve_instance(in_file, out_dir):
                                    for i in
                                    tqdm(range(l_max), desc='Constraint 4: length consistent wrt circuits positioning')]
 
-    """"# 5 - CONSTRAINT
-    # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
-    max_y = np.argmax(y)
-    highest_circuit_first = [
-        And([p[i][j][k] if k == max_y else Not(p[i][j][k]) for k in range(n) for j in range(x[max_y]) for i in
-             tqdm(range(y[max_y]), desc='Constraint 5: set highest circuit first')])]"""
-
     # 5 - CONSTRAINT
-    # simmetry breaking constraint: remove horizontal flip, vertical flip and 180° rotation
-    simmetry_breaking = [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
-                              [p[i][j] for j in range(w) for i in reversed(range(l_max))], n)]
+    # symmetry breaking constraint: remove horizontal flip, vertical flip and 180° rotation
+    symmetry_breaking = [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                              [p[i][j] for j in range(w) for i in reversed(range(l_max))], n, "Constraint 5: symmetry breaking vertial flip")]
 
-    simmetry_breaking += [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
-                               [p[i][j] for j in reversed(range(w)) for i in range(l_max)], n)]
+    symmetry_breaking += [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in range(l_max)], n, "Constraint 5: symmetry breaking horizontal flip")]
 
-    simmetry_breaking += [z3_lex_lesseq([p[i][j] for j in range(w) for i in range(l_max)],
-                               [p[i][j] for j in reversed(range(w)) for i in reversed(range(l_max))], n)]
+    symmetry_breaking += [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in reversed(range(l_max))], n, "Constraint 5: symmetry breaking 180° rotation")]
 
     ''' SETTING THE SOLVER '''
     solver = Solver()
@@ -187,7 +200,7 @@ def solve_instance(in_file, out_dir):
     solver.add(exactly_one_circuit_positioning)
     solver.add(one_hot_length)
     solver.add(length_circuits_positioning)
-    solver.add(simmetry_breaking)
+    solver.add(symmetry_breaking)
 
     # maximum time of execution
     timeout = 300000
@@ -239,7 +252,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-11.txt"
+    in_file = "..\..\data\instances_txt\ins-10.txt"
     out_dir = "out"
     solve_instance(in_file, out_dir)
 

@@ -22,6 +22,7 @@ def plot_solution(w_plate, h_plate, n, circuits, solution, legend=True, colors=N
     assert(len(circuits) == len(solution['corners']))
 
     corners = solution['corners']
+    rotations = solution['rotation']
 
     # get n colors if they are not passed as parameter
     if colors is None:
@@ -30,10 +31,18 @@ def plot_solution(w_plate, h_plate, n, circuits, solution, legend=True, colors=N
     fig, ax = plt.subplots(facecolor='w', edgecolor='k')
 
     for i in range(n):
+        # dimensions of the circuit
+        x = circuits[i][0]
+        y = circuits[i][1]
+
+        # check rotation
+        if rotations[i]:
+            x, y = y, x
+
         r = Rectangle(
             corners[i],
-            circuits[i][0],
-            circuits[i][1],
+            x,
+            y,
             facecolor=colors[i],
             edgecolor='black',
             label=f'circuit {i+1}'
@@ -107,11 +116,12 @@ if __name__ == "__main__":
             remaining_lines = [line for line in remaining_lines if ("=" not in line) and ('-' not in line)]
 
             circuits = []
-            solution = {'corners': []}
+            solution = {'corners': [], 'rotation': []}
 
             for i, line in enumerate(remaining_lines):
                 line = line.split()
                 circuits.append((int(line[0]), int(line[1])))
                 solution['corners'].append((int(line[2]), int(line[3])))
+                solution['rotation'].append(True if len(line) == 5 else False)
 
         plot_solution(width, height, n_circuits, circuits, solution, args.legend)

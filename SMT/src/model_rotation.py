@@ -13,7 +13,8 @@ def write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length, out_file):
         f_out.write('{}\n'.format(n))
 
         for i in range(n):
-            f_out.write('{} {} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i], rot_sol[i]))
+            is_rotated = "R" if rot_sol[i] else ""
+            f_out.write('{} {} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i], is_rotated))
 
 
 def solve_instance(in_file, out_dir):
@@ -135,7 +136,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-3.txt"
+    in_file = "..\..\data\instances_txt\ins-1.txt"
     out_dir = "out_rotation"
     solve_instance(in_file, out_dir)
 
