@@ -17,12 +17,14 @@ def get_dataframe(list_of_dir, column_names):
                 elapsed_time = float(lines[-1])
                 dir_dict["{}".format(instance_name[:-4])] = elapsed_time
         dataframe_list.append(dir_dict)
+    print(dataframe_list)
 
-    # creation of the datafame to use for visulizaion
-    df = pd.DataFrame(dataframe_list, columns=column_names)
+    # creation of the datafame to use for visulizaion purpose
+    df = pd.DataFrame(data=dataframe_list, columns=column_names)
 
+    print(df)
     # setting NaN to 0 (instance too hard to execute)
-    df.fillna(0)
+    df = df.fillna(0)
 
     return df
 
@@ -30,6 +32,7 @@ def get_dataframe(list_of_dir, column_names):
 def show_histogram(df):
 
     df.plot.bar()
+    #plt.show()
 
 
 def main():
