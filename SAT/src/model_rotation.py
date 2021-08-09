@@ -113,7 +113,6 @@ def solve_instance(in_file, out_dir):
 
     w, n, x, y, l_max, mag_w = read_file(in_file)
 
-
     max_x = max(x)
     max_y = max(y)
     w_blocks = w // max_x
@@ -127,6 +126,9 @@ def solve_instance(in_file, out_dir):
 
     # length of the plate to minimize (one-hot representation)
     l = [Bool(f"l_{i}") for i in range(l_max)]
+
+    # array of rotations for each circuit
+    r = [Bool(f"r_{i}") for i in range(n)]
 
     ''' DEFINITION OF THE CONSTRAINTS '''
 
@@ -167,7 +169,36 @@ def solve_instance(in_file, out_dir):
                 all_circuit_positions.append(And(circuit_positioning))
 
         # Exactly one
-        exactly_one_circuit_positioning += exactly_one(all_circuit_positions)
+        exactly_one_circuit_positioning += [Or(Not(r[k]), at_least_one(all_circuit_positions))]
+
+
+        # ROTATION
+        x_k, y_k = y_k, x_k
+
+        # clause containing all possible positions of each circuit into the plate
+        all_circuit_positions = []
+
+        # Iterate over all the coordinates where p can fit
+        for i in range(l_max - y_k + 1):
+            for j in range(w - x_k + 1):
+
+                # all cells corresponding to the circuit position
+                circuit_positioning = []
+
+                # Iterate over the cells of circuit's patch
+                for oy in range(l_max):
+                    for ox in range(w):
+                        if i <= oy < i + y_k and j <= ox < j + x_k:
+                            circuit_positioning.append(p[oy][ox][k])
+                        else:
+                            circuit_positioning.append(Not(p[oy][ox][k]))
+
+                all_circuit_positions.append(And(circuit_positioning))
+
+        # Exactly one
+        exactly_one_circuit_positioning += [Or(r[k], at_least_one(all_circuit_positions))]
+
+
 
     # 3 - CONSTRAINT
     # one-hot encoding of the length
