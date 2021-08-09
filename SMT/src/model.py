@@ -30,7 +30,7 @@ def read_file(input_filename):
         return int(w), int(n), x, y, l_max, mag_w
 
 
-def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
+def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file, elapsed_time):
 
     with open(out_file, 'w+') as f_out:
 
@@ -39,6 +39,8 @@ def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file):
 
         for i in range(n):
             f_out.write('{} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i]))
+
+        f_out.write('{}\n'.format(elapsed_time))
 
 
 def z3_max(vector):
@@ -147,7 +149,7 @@ def solve_instance(in_file, out_dir):
         length_sol = model.evaluate(length).as_string()
 
         # storing result
-        write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file)
+        write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file, elapsed_time)
 
     elif opt.reason_unknown() == "timeout":
         elapsed_time = time.time() - start_time
@@ -161,7 +163,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
 
-    in_file = "..\..\data\instances_txt\ins-10.txt"
+    in_file = "..\..\data\instances_txt\ins-1.txt"
     out_dir = "out"
     solve_instance(in_file, out_dir)
 
