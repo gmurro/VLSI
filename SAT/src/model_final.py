@@ -26,19 +26,24 @@ def solve_instance(in_file, out_dir):
     # Each cell in the plate has at most one value
 
     # introduce a set of auxiliary propositional variables
-    k = int(np.ceil(np.log2(n)))
-    m = int(n/2)
-    b1 = [[[Bool(f'b_{i}_{j}_{h}') for h in range(k)] for j in range(w)] for i in range(l_max)]
+    k1 = int(np.ceil(np.log2(n)))
+    m1 = int(np.ceil(np.sqrt(n)))
+    b1 = [[[Bool(f'b1_{i}_{j}_{h}') for h in range(k1)] for j in range(w)] for i in range(l_max)]
 
     no_overlapping = []
     for i in tqdm(range(l_max), desc='Constraint 1: no overlapping between circuits', leave=False):
         for j in range(w):
-            no_overlapping += amo_bimander(p[i][j], b1[i][j], m)
+            no_overlapping += amo_bimander(p[i][j], b1[i][j], m1)
 
     # 2 - CONSTRAINT
+    # introduce a set of auxiliary propositional variables
+    b2 = []
+
     # Iterate over all the n circuits
     exactly_one_circuit_positioning = []
     for k in tqdm(range(n), desc='Constraint 2: exactly one circuit positioning', leave=False):
+        b2.append([])
+
         x_k = x[k]
         y_k = y[k]
 
@@ -48,7 +53,6 @@ def solve_instance(in_file, out_dir):
         # Iterate over all the coordinates where p can fit
         for i in range(l_max - y_k + 1):
             for j in range(w - x_k + 1):
-
                 # all cells corresponding to the circuit position
                 circuit_positioning = []
 
@@ -63,8 +67,15 @@ def solve_instance(in_file, out_dir):
                 all_circuit_positions.append(And(circuit_positioning))
 
         # Exactly one
+        n2 = len(all_circuit_positions)
+        k2 = int(np.ceil(np.log2(n2)))
+        m2 = int(np.ceil(np.sqrt(n2)))
+
+        # add auxiliary propositional variables
+        b2[k] = [Bool(f'b2_{k}_{i}') for i in range(k2)]
+
         exactly_one_circuit_positioning += [at_least_one(all_circuit_positions)]
-        exactly_one_circuit_positioning += amo_bimander(all_circuit_positions)
+        exactly_one_circuit_positioning += amo_bimander(all_circuit_positions, b2[k], m2)
 
     # 3 - CONSTRAINT
     # one-hot encoding of the length
