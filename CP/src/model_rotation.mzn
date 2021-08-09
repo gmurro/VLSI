@@ -176,4 +176,8 @@ solve :: search_ann_x
          minimize l;
 
 
-output["\(w) \(l)\n\(n)\n"] ++ ["\(x[i]) \(y[i]) \(p_x[i]) \(p_y[i]) \(rotation[i])\n" | i in CIRCUITS];
+output ["\(w) \(l)\n\(n)\n"]
+    ++ ["\(x[i]) \(y[i]) \(p_x[i]) \(p_y[i])" 
+        ++ if fix(rotation[i]) then " R" else "" endif
+        ++ "\n" 
+       | i in index_set(rotation)];
