@@ -159,7 +159,7 @@ def solve_instance(in_file, out_dir):
 def main():
 
     in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "out"
+    out_dir = "../out"
     solve_instance(in_file, out_dir)
 
 

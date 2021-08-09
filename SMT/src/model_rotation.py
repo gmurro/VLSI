@@ -139,7 +139,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
     in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "out_rotation"
+    out_dir = "../out_rotation"
     solve_instance(in_file, out_dir)
 
 
