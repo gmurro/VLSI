@@ -7,6 +7,10 @@ include "alldifferent.mzn";
 int: w;
 set of int: FEASIBLE_WIDTH = 1..w;
 
+% maximum heigth of the plate
+int: l_max;
+set of int: FEASIBLE_HEIGTH = 1..l_max;
+
 % number of circuits
 int: n;
 set of int: CIRCUITS = 1..n;
@@ -15,16 +19,7 @@ set of int: CIRCUITS = 1..n;
 array[CIRCUITS] of FEASIBLE_WIDTH: x;
 
 % vertical dimension of the circuits
-array[CIRCUITS] of int: y;
-
-% maximum heigth of the plate
-int: max_x = max(x);
-int: max_y = max(y);
-int: w_blocks = w div max_x;
-int: l_max;
-int: length_max = if -(l_max div -w_blocks) < max_y then max_y else -(l_max div -w_blocks) endif;
-
-set of int: FEASIBLE_HEIGTH = 1..length_max;
+array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
 % array to specify whether a circuit is rotated or not
 array[CIRCUITS] of var bool: rotation;
@@ -55,7 +50,7 @@ int: index = arg_max(y);
 array[CIRCUITS] of var 0..w-min(x): p_x;
 
 % y coordinate of circuits
-array[CIRCUITS] of var 0..length_max-min(y): p_y;
+array[CIRCUITS] of var 0..l_max-min(y): p_y;
 
 % length of the plate to minimize
 var FEASIBLE_HEIGTH: l;
@@ -74,7 +69,7 @@ constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 constraint max([p_x[i] + x_r[i] | i in CIRCUITS]) <= w;
 
 % maximum heigth (it could be eliminated for construction of l_max if we do not take into account rotation)
-constraint max([p_y[i] + y_r[i] | i in CIRCUITS]) <= length_max;
+constraint max([p_y[i] + y_r[i] | i in CIRCUITS]) <= l_max;
 
 % relationships among circuits
 constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x_r[i] <= p_x[j] \/ p_x[j] + x_r[j] <= p_x[i] \/ p_y[i] + y_r[i] <= p_y[j] \/ p_y[j] + y_r[j] <= p_y[i]);
@@ -84,7 +79,7 @@ constraint forall(i in CIRCUITS)(y[i] > w -> rotation[i]==false);
 
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y_r, x_r, w);
-constraint cumulative(p_x, x_r, y_r, length_max);
+constraint cumulative(p_x, x_r, y_r, l_max);
 
 % symmetry breaking constraint
 constraint symmetry_breaking_constraint(
