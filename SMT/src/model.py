@@ -2,6 +2,7 @@ from z3 import *
 import numpy as np
 from itertools import combinations
 import time
+from utils.utility import compute_l_max
 
 
 def read_file(input_filename):
@@ -21,7 +22,7 @@ def read_file(input_filename):
             x.append(int(split[0]))
             y.append(int(split[1]))
 
-        l_max = sum(y)
+        l_max = compute_l_max(x, y, int(w))
 
         # compute order of magnitude of w
         len_w = len(str(w))
