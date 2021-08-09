@@ -27,12 +27,6 @@ def solve_instance(in_file, out_dir):
 
     w, n, x, y, l_max, mag_w = md.read_file(in_file)
 
-    max_x = max(x)
-    max_y = max(y)
-    w_blocks = w // max_x
-    l_max = -(l_max // -w_blocks)
-    l_max = max_y if l_max < max_y else l_max
-
     # index of the circuit with the highest value
     index = np.argmax(np.asarray(y))
 

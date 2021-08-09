@@ -1,4 +1,5 @@
 import sys
+from utility import compute_l_max
 
 txt_path = "../data/instances_txt"
 dzn_path = "../CP/instances_dzn"
@@ -29,7 +30,7 @@ for k in range(1, 41):
             x.append(int(split[0]))
             y.append(int(split[1]))
 
-        l_max = sum(y)
+        l_max = compute_l_max(x, y, int(w))
 
         # compute order of magnitude of w
         len_w = len(str(w))
