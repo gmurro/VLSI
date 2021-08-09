@@ -63,7 +63,7 @@ def solve_instance(in_file, out_dir):
                 all_circuit_positions.append(And(circuit_positioning))
 
         # Exactly one
-        exactly_one_circuit_positioning += at_least_one(all_circuit_positions)
+        exactly_one_circuit_positioning += [at_least_one(all_circuit_positions)]
         exactly_one_circuit_positioning += amo_bimander(all_circuit_positions)
 
     # 3 - CONSTRAINT
@@ -157,7 +157,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-1.txt"
+    in_file = "..\..\data\instances_txt\ins-6.txt"
     out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 

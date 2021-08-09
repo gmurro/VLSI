@@ -118,7 +118,8 @@ if __name__ == "__main__":
             circuits = []
             solution = {'corners': [], 'rotation': []}
 
-            for i, line in enumerate(remaining_lines):
+            for i in range(n_circuits):
+                line = remaining_lines[i]
                 line = line.split()
                 circuits.append((int(line[0]), int(line[1])))
                 solution['corners'].append((int(line[2]), int(line[3])))
