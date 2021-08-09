@@ -1,7 +1,7 @@
 import sys
 
 txt_path = "../data/instances_txt"
-dzn_path = "../data/instances_dzn"
+dzn_path = "../CP/instances_dzn"
 
 #if len(sys.argv) != 3:
     #print('Usage: instances_to_dzn.py <input_file> <output_file>')
