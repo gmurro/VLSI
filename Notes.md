@@ -102,3 +102,8 @@ Solve as many instances as possible in this time range.
 2) SAT implied constraints
 4) symmetries in dual model CP
 5) search
+
+### Instance 5 SAT execution
+- pairwise amo: 40,498s
+- bimander amo: 
+- pairwise amo with rotation: 2,7151 min

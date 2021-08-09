@@ -18,19 +18,22 @@ def solve_instance(in_file, out_dir):
     # length of the plate to minimize (one-hot representation)
     l = [Bool(f"l_{i}") for i in range(l_max)]
 
-    # array of rotations for each circuit
-    r = [Bool(f"r_{i}") for i in range(n)]
-
     ''' DEFINITION OF THE CONSTRAINTS '''
 
     print('Defining constraints...')
 
     # 1 - CONSTRAINT
     # Each cell in the plate has at most one value
+
+    # introduce a set of auxiliary propositional variables
+    k = int(np.ceil(np.log2(n)))
+    m = int(n/2)
+    b1 = [[[Bool(f'b_{i}_{j}_{h}') for h in range(k)] for j in range(w)] for i in range(l_max)]
+
     no_overlapping = []
     for i in tqdm(range(l_max), desc='Constraint 1: no overlapping between circuits', leave=False):
         for j in range(w):
-            no_overlapping += amo_pairwise(p[i][j])
+            no_overlapping += amo_bimander(p[i][j], b1[i][j], m)
 
     # 2 - CONSTRAINT
     # Iterate over all the n circuits
@@ -60,35 +63,8 @@ def solve_instance(in_file, out_dir):
                 all_circuit_positions.append(And(circuit_positioning))
 
         # Exactly one
-        not_rotated_circuit_positioning = And(Not(r[k]), And(exactly_one(all_circuit_positions)))
-
-        # ROTATION
-        x_k, y_k = y_k, x_k
-
-        # clause containing all possible positions of each circuit into the plate
-        all_circuit_positions = []
-
-        # Iterate over all the coordinates where p can fit
-        for i in range(l_max - y_k + 1):
-            for j in range(w - x_k + 1):
-
-                # all cells corresponding to the circuit position
-                circuit_positioning = []
-
-                # Iterate over the cells of circuit's patch
-                for oy in range(l_max):
-                    for ox in range(w):
-                        if i <= oy < i + y_k and j <= ox < j + x_k:
-                            circuit_positioning.append(p[oy][ox][k])
-                        else:
-                            circuit_positioning.append(Not(p[oy][ox][k]))
-
-                all_circuit_positions.append(And(circuit_positioning))
-
-        # Exactly one
-        rotated_circuit_positioning = And(r[k], And(exactly_one(all_circuit_positions)))
-
-        exactly_one_circuit_positioning += exactly_one([not_rotated_circuit_positioning, rotated_circuit_positioning])
+        exactly_one_circuit_positioning += at_least_one(all_circuit_positions)
+        exactly_one_circuit_positioning += amo_bimander(all_circuit_positions)
 
     # 3 - CONSTRAINT
     # one-hot encoding of the length
@@ -100,6 +76,25 @@ def solve_instance(in_file, out_dir):
                                    for i in
                                    tqdm(range(l_max), desc='Constraint 4: length consistent wrt circuits positioning', leave=False)]
 
+    """# 5 - CONSTRAINT
+    # symmetry breaking constraint: remove horizontal flip, vertical flip and 180° rotation
+    symmetry_breaking = [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                              [p[i][j] for j in range(w) for i in reversed(range(l_max))], n, "Constraint 5: symmetry breaking vertial flip")]
+
+    symmetry_breaking += [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in range(l_max)], n, "Constraint 5: symmetry breaking horizontal flip")]
+
+    symmetry_breaking += [z3_lex_less_eq([p[i][j] for j in range(w) for i in range(l_max)],
+                               [p[i][j] for j in reversed(range(w)) for i in reversed(range(l_max))], n, "Constraint 5: symmetry breaking 180° rotation")]"""
+
+    # 5 - CONSTRAINT
+    # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
+    max_y = np.argmax(y)
+    highest_circuit_first = [
+        And([p[i][j][k] if k == max_y else Not(p[i][j][k]) for k in range(n) for j in range(x[max_y]) for i in
+             tqdm(range(y[max_y]), desc='Constraint 5: set highest circuit first', leave=False)])]
+
+
     ''' SETTING THE SOLVER '''
     solver = Solver()
 
@@ -110,6 +105,7 @@ def solve_instance(in_file, out_dir):
     solver.add(exactly_one_circuit_positioning)
     solver.add(one_hot_length)
     solver.add(length_circuits_positioning)
+    solver.add(highest_circuit_first)
 
     # maximum time of execution
     timeout = 300000
@@ -149,10 +145,10 @@ def solve_instance(in_file, out_dir):
         length_sol += 1
 
         elapsed_time = time.time() - start_time
-        print(f'{elapsed_time :.2f} s')
+        print(f'{elapsed_time * 1000:.1f} ms')
 
         print(f"The minimal length is {length_sol}")
-        p_x_sol, p_y_sol, rot_sol = model_to_coordinates(model, p, w, length_sol, n, r)
+        p_x_sol, p_y_sol, rot_sol = model_to_coordinates(model, p, w, length_sol, n)
 
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length_sol, elapsed_time, out_file)
@@ -162,7 +158,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
     in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "..\\out\\rotation"
+    out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 
 
