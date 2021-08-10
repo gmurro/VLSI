@@ -33,11 +33,10 @@ def get_dataframe(list_of_dir, column_names):
 
 def show_histogram(df, title, x_label, y_label):
 
-    fig, ax = plt.subplots()
+    ax = df.plot.bar(rot=0)
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    df.plot.bar()
     plt.legend(loc="upper right")
     plt.show()
 
@@ -46,7 +45,7 @@ def main():
     column_names = ['CP', 'SAT', 'SMT']
     directories = ["../CP/out", "../SAT/out/final", "../SMT/out"]
     data = get_dataframe(directories, column_names)
-    show_histogram(data, "Benchmark with different methods", "Instances", "Time in seconds")
+    show_histogram(data, 'Benchmark with different methods', 'Instances', 'Time in seconds')
 
 
 if __name__ == "__main__":
