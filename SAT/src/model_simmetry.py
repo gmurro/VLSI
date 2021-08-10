@@ -24,15 +24,10 @@ def solve_instance(in_file, out_dir):
     # 1 - CONSTRAINT
     # Each cell in the plate has at most one value
 
-    # introduce a set of auxiliary propositional variables
-    k = int(np.ceil(np.log2(n)))
-    m = int(n/2)
-    b = [[[Bool(f'b_{i}_{j}_{h}') for h in range(k)] for j in range(w)] for i in range(l_max)]
-
     no_overlapping = []
     for i in tqdm(range(l_max), desc='Constraint 1: no overlapping between circuits', leave=False):
         for j in range(w):
-            no_overlapping += amo_bimander(p[i][j], b[i][j], m)
+            no_overlapping += amo_pairwise(p[i][j])
 
     # 2 - CONSTRAINT
     # Iterate over all the n circuits

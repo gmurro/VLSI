@@ -161,7 +161,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-1.txt"
+    in_file = "..\..\data\instances_txt\ins-10.txt"
     out_dir = "..\\out\\rotation"
     solve_instance(in_file, out_dir)
 

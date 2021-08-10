@@ -100,8 +100,11 @@ Solve as many instances as possible in this time range.
 ## TODO
 
 2) SAT implied constraints
+3) CP and SMT implied constraints vertical
 4) symmetries in dual model CP
 5) search
+6) Symmetry breaking SMT
+7) best way to search for solutions in CP also when rotation is allowed.
 
 ### Instance 5 SAT execution
 - pairwise amo: 40,498s
