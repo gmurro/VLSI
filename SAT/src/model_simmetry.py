@@ -5,7 +5,7 @@ from tqdm import tqdm
 def solve_instance(in_file, out_dir):
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
 
     w, n, x, y, l_max = read_file(in_file)
 

@@ -2,7 +2,7 @@ from z3 import *
 import numpy as np
 from itertools import combinations
 import time
-import model as md
+import model_final as md
 
 
 def write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length, out_file, elapsed_time):
@@ -23,7 +23,7 @@ def solve_instance(in_file, out_dir):
 
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
 
     w, n, x, y, l_max, mag_w = md.read_file(in_file)
 
@@ -139,7 +139,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
     in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "../out_rotation"
+    out_dir = "../out/out_rotation"
     solve_instance(in_file, out_dir)
 
 

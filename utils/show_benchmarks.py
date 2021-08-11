@@ -43,7 +43,7 @@ def show_histogram(df, title, x_label, y_label):
 
 def main():
     column_names = ['CP', 'SAT', 'SMT']
-    directories = ["../CP/out", "../SAT/out/final", "../SMT/out"]
+    directories = ["../CP/out_final", "../SAT/out_final/final", "../SMT/out_final"]
     data = get_dataframe(directories, column_names)
     show_histogram(data, 'Benchmark with different methods', 'Instances', 'Time in seconds')
 

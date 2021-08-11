@@ -10,7 +10,7 @@ def solve_instance(cores, model, in_file, out_dir):
 
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
     with open(out_file, 'w') as f:
         print(f'{out_file}:', end='\t', flush=True)
         start_time = time()
@@ -24,7 +24,7 @@ def main():
     cores = 1
     model = "model.mzn"
     in_file = "..\instances_dzn\ins-3.dzn"
-    out_dir = "..\out"
+    out_dir = "../out/out_final"
 
     solve_instance(cores, model, in_file, out_dir)
 
