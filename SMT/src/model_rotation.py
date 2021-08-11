@@ -88,7 +88,7 @@ def solve_instance(in_file, out_dir):
 
     # circuits must be pushed on the left
     left = [sum([If(p_x[i] <= w // 2, area[i], 0) for i in range(n)])
-            > sum([If(p_x[i] > w // 2, area[i], 0) for i in range(n)])]
+            >= sum([If(p_x[i] > w // 2, area[i], 0) for i in range(n)])]
 
     # setting the optimizer
     opt = Optimize()
