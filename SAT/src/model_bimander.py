@@ -2,6 +2,10 @@ from sat_utils import *
 import time
 from tqdm import tqdm
 
+def compute_m(n):
+    return int(np.ceil(np.sqrt(n)))
+
+
 def solve_instance(in_file, out_dir):
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
@@ -24,15 +28,26 @@ def solve_instance(in_file, out_dir):
     # 1 - CONSTRAINT
     # Each cell in the plate has at most one value
 
+    # introduce a set of auxiliary propositional variables
+
+    m1 = compute_m(n)
+    k1 = int(np.ceil(np.log2(m1)))
+    b1 = [[[Bool(f'b1_{i}_{j}_{h}') for h in range(k1)] for j in range(w)] for i in range(l_max)]
+
     no_overlapping = []
     for i in tqdm(range(l_max), desc='Constraint 1: no overlapping between circuits', leave=False):
         for j in range(w):
-            no_overlapping += amo_pairwise(p[i][j])
+            no_overlapping += amo_bimander(p[i][j], b1[i][j], m1)
 
     # 2 - CONSTRAINT
+    # introduce a set of auxiliary propositional variables
+    b2 = []
+
     # Iterate over all the n circuits
     exactly_one_circuit_positioning = []
     for k in tqdm(range(n), desc='Constraint 2: exactly one circuit positioning', leave=False):
+        b2.append([])
+
         x_k = x[k]
         y_k = y[k]
 
@@ -42,7 +57,6 @@ def solve_instance(in_file, out_dir):
         # Iterate over all the coordinates where p can fit
         for i in range(l_max - y_k + 1):
             for j in range(w - x_k + 1):
-
                 # all cells corresponding to the circuit position
                 circuit_positioning = []
 
@@ -56,12 +70,27 @@ def solve_instance(in_file, out_dir):
 
                 all_circuit_positions.append(And(circuit_positioning))
 
+        # add auxiliary propositional variables
+        n2 = len(all_circuit_positions)
+        m2 = compute_m(n2)
+        k2 = int(np.ceil(np.log2(m2)))
+        b2[k] = [Bool(f'b2_{k}_{i}') for i in range(k2)]
+
         # Exactly one
-        exactly_one_circuit_positioning += exactly_one(all_circuit_positions)
+        exactly_one_circuit_positioning += [at_least_one(all_circuit_positions)]
+        exactly_one_circuit_positioning += amo_bimander(all_circuit_positions, b2[k], m2)
 
     # 3 - CONSTRAINT
     # one-hot encoding of the length
-    one_hot_length = exactly_one([l[i] for i in tqdm(range(l_max), desc='Constraint 3: one hot encoding length', leave=False)])
+
+    # introduce a set of auxiliary propositional variables
+    m3 = compute_m(l_max)
+    k3 = int(np.ceil(np.log2(m3)))
+    b3 = [Bool(f'b3_{i}') for i in range(k3)]
+
+    # exactly one
+    one_hot_length = [at_least_one(l)]
+    one_hot_length += amo_bimander(l, b3, m3)
 
     # 4 - CONSTRAINT
     # compute the length consistent wrt the actual circuits positioning
@@ -76,6 +105,7 @@ def solve_instance(in_file, out_dir):
         And([p[i][j][k] if k == max_y else Not(p[i][j][k]) for k in range(n) for j in range(x[max_y]) for i in
              tqdm(range(y[max_y]), desc='Constraint 5: set highest circuit first', leave=False)])]
 
+
     ''' SETTING THE SOLVER '''
     solver = Solver()
 
@@ -88,9 +118,8 @@ def solve_instance(in_file, out_dir):
     solver.add(length_circuits_positioning)
     solver.add(highest_circuit_first)
 
-
     # maximum time of execution
-    timeout = 3000000
+    timeout = 300000
     solver.set(timeout=timeout)
 
     ''' SOLVING THE PROBLEM '''
@@ -140,7 +169,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
     in_file = "..\..\data\instances_txt\ins-4.txt"
-    out_dir = "..\\out\\final"
+    out_dir = "..\\out\\bimander"
     solve_instance(in_file, out_dir)
 
 

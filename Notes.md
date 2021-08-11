@@ -104,7 +104,7 @@ Solve as many instances as possible in this time range.
 4) symmetries in dual model CP
 5) search
 6) Symmetry breaking SMT
-7) best way to search for solutions in CP also when rotation is allowed.
+7) best way to search for solutions in CP also when rotation is allowed
 
 ### Instance 5 SAT execution
 - pairwise amo: 40,498s

@@ -121,8 +121,8 @@ def solve_instance(in_file, out_dir):
     print(f'{out_file}:', end='\t', flush=True)
     start_time = time.time()
 
-    # utility variable to check if at least a solution is computed before reaching the timeout
-    at_least_one_solution = False
+    # utility variable to check if a solution is been found
+    solution_found = False
 
     # check the model until the minimal length is reached
     while True:
@@ -136,16 +136,13 @@ def solve_instance(in_file, out_dir):
             # prevent next model from using the same assignment as a previous model
             solver.add(at_least_one([l[i] for i in range(length_sol)]))
 
-            at_least_one_solution = True
+            solution_found = True
 
-        elif solver.reason_unknown() == "timeout":
-            print("Timeout reached, no optimal solution provided")
-            break
         else:
             # break when it is impossible to improve anymore the length
             break
 
-    if at_least_one_solution:
+    if solution_found:
         length_sol += 1
 
         elapsed_time = time.time() - start_time
@@ -156,6 +153,9 @@ def solve_instance(in_file, out_dir):
 
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length_sol, elapsed_time, out_file)
+
+    elif solver.reason_unknown() == "timeout":
+        print("Timeout reached, no optimal solution provided")
     else:
         print("Unsatisfiable problem")
 
