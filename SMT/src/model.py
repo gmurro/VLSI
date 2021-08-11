@@ -73,6 +73,9 @@ def solve_instance(in_file, out_dir):
     # index of the circuit with the highest value
     index = np.argmax(np.asarray(y))
 
+    # area of each circuit
+    area = [x[i] * y[i] for i in range(n)]
+
     # definition of the variables
 
     # coordinates of the points
@@ -115,10 +118,15 @@ def solve_instance(in_file, out_dir):
     # the circuit whose height is the maximum among all circuits is put in the left-bottom corner
     symmetry = [And(p_x[index] == 0, p_y[index] == 0)]
 
+    # circuits must be pushed on the left
+    left = [sum([If(p_x[i] <= w // 2, area[i], 0) for i in range(n)])
+            >= sum([If(p_x[i] > w // 2, area[i], 0) for i in range(n)])]
+
+
     # setting the optimizer
     opt = Optimize()
     opt.add(domain_x + domain_y + overlapping + all_different + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry)
+            cumulative_y + max_w + max_h + symmetry + left)
     opt.minimize(length)
 
     # maximum time of execution
