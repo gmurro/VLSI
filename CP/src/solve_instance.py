@@ -17,7 +17,7 @@ def solve_instance(cores, model, in_file, out_dir):
         subprocess.run(command.split())
         elapsed_time = time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
-        if elapsed_time < 300000:
+        if (elapsed_time * 1000) < 300000:
             subprocess.run(command.split(), stdout=f)
             f.write('{}\n'.format(elapsed_time))
 
