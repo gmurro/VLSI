@@ -14,10 +14,12 @@ def solve_instance(cores, model, in_file, out_dir):
     with open(out_file, 'w') as f:
         print(f'{out_file}:', end='\t', flush=True)
         start_time = time()
-        subprocess.run(command.split(), stdout=f)
+        subprocess.run(command.split())
         elapsed_time = time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
-        f.write('{}\n'.format(elapsed_time))
+        if elapsed_time < 300000:
+            subprocess.run(command.split(), stdout=f)
+            f.write('{}\n'.format(elapsed_time))
 
 
 def main():
