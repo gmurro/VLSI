@@ -22,6 +22,12 @@ array[CIRCUITS] of FEASIBLE_WIDTH: x;
 % vertical dimension of the circuits
 array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
+% area of circuits
+array[CIRCUITS] of int: area = [ x[i] * y[i] | i in CIRCUITS];
+
+% circuit with the maximum height
+int: index = arg_max(y);
+
 % order of magnitude of w
 int: mag_w;
 
@@ -61,6 +67,16 @@ constraint diffn(p_x, p_y, x, y);
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
+
+% symmetry breaking constraint
+constraint symmetry_breaking_constraint(
+  p_x[index] == 0 /\ p_y[index] == 0
+);
+
+% higher density on the left wrt the right
+constraint symmetry_breaking_constraint(
+  sum(i in CIRCUITS where p_x[i] <= w div 2)(area[i]) >= sum(i in CIRCUITS where p_x[i] > w div 2)(area[i])
+);
 
 % Parameters to control the search heuristic and restart strategy
 int: heuristic = 6;
