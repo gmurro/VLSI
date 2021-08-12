@@ -2,7 +2,7 @@ from z3 import *
 import numpy as np
 from itertools import combinations
 import time
-from utils.utility import compute_l_max
+from CP.src.cp_utils import compute_l_max
 
 
 def read_file(input_filename):
