@@ -75,7 +75,7 @@ def solve_instance(in_file, out_dir):
 
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out.txt')
 
     w, n, x, y, l_max, mag_w = read_file(in_file)
 
@@ -171,8 +171,8 @@ def solve_instance(in_file, out_dir):
 
 def main():
 
-    in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "../out/out_final"
+    in_file = "..\..\data\instances_txt\ins-19.txt"
+    out_dir = "../out/final"
     solve_instance(in_file, out_dir)
 
 
