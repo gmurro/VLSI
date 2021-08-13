@@ -50,8 +50,8 @@ def solve_instance(in_file, out_dir):
     length = md.z3_max([p_y[i] + y[i] for i in range(n)])
 
     # domain bounds
-    domain_x = [And(p_x[i] >= 0, p_x[i] <= w-min(x)) for i in range(n)]
-    domain_y = [And(p_y[i] >= 0, p_y[i] <= l_max-min(y)) for i in range(n)]
+    domain_x = [p_x[i] >= 0 for i in range(n)]
+    domain_y = [p_y[i] >= 0 for i in range(n)]
 
     # lengths bound
     width_bound = [And(x_r[i] >= 1, x_r[i] <= w) for i in range(n)]
