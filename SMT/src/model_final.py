@@ -50,7 +50,7 @@ def write_file(w, n, x, y, p_x_sol, p_y_sol, length, out_file, elapsed_time):
         for i in range(n):
             f_out.write('{} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i]))
 
-        f_out.write('{}\n'.format(elapsed_time))
+        f_out.write('{}'.format(elapsed_time))
 
 
 def z3_max(vector):
@@ -171,8 +171,8 @@ def solve_instance(in_file, out_dir):
 
 def main():
 
-    in_file = "..\..\data\instances_txt\ins-19.txt"
-    out_dir = "../out/final"
+    in_file = "..\..\data\instances_txt\ins-1.txt"
+    out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 
 

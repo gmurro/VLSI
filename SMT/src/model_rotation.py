@@ -16,7 +16,7 @@ def write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length, out_file, elapsed_
             is_rotated = "R" if rot_sol[i] else ""
             f_out.write('{} {} {} {} {}\n'.format(x[i], y[i], p_x_sol[i], p_y_sol[i], is_rotated))
 
-        f_out.write('{}\n'.format(elapsed_time))
+        f_out.write('{}'.format(elapsed_time))
 
 
 def solve_instance(in_file, out_dir):
