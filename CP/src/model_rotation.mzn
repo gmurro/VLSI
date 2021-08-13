@@ -1,5 +1,6 @@
 include "cumulative.mzn";
 include "alldifferent.mzn";
+include "diffn.mzn";
 
 % input of the problem
 
@@ -72,7 +73,7 @@ constraint max([p_x[i] + x_r[i] | i in CIRCUITS]) <= w;
 constraint max([p_y[i] + y_r[i] | i in CIRCUITS]) <= l_max;
 
 % relationships among circuits
-constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x_r[i] <= p_x[j] \/ p_x[j] + x_r[j] <= p_x[i] \/ p_y[i] + y_r[i] <= p_y[j] \/ p_y[j] + y_r[j] <= p_y[i]);
+constraint diffn(p_x, p_y, x_r, y_r);
 
 % a circuit cannot be rotated whether its height is greater than w
 constraint forall(i in CIRCUITS)(y[i] > w -> rotation[i]==false);

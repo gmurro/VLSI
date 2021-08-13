@@ -1,6 +1,6 @@
 import argparse
 from glob import glob
-import model as md
+import model_final as md
 import model_rotation as mdr
 from z3 import *
 

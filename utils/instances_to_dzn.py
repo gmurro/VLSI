@@ -1,5 +1,5 @@
 import sys
-from utility import compute_l_max
+from CP.src.cp_utils import compute_l_max
 
 txt_path = "../data/instances_txt"
 dzn_path = "../CP/instances_dzn"

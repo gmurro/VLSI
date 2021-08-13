@@ -2,7 +2,16 @@ from z3 import *
 import numpy as np
 from itertools import combinations
 import time
-from utils.utility import compute_l_max
+
+
+def compute_l_max(x, y, w):
+    l_max = sum(y)
+    max_x = max(x)
+    max_y = max(y)
+    w_blocks = w // max_x
+    l_max = -(l_max // -w_blocks)
+    l_max = max_y if l_max < max_y else l_max
+    return l_max
 
 
 def read_file(input_filename):
@@ -66,7 +75,7 @@ def solve_instance(in_file, out_dir):
 
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
 
     w, n, x, y, l_max, mag_w = read_file(in_file)
 
@@ -167,7 +176,7 @@ def solve_instance(in_file, out_dir):
 def main():
 
     in_file = "..\..\data\instances_txt\ins-1.txt"
-    out_dir = "../out"
+    out_dir = "../out/out_final"
     solve_instance(in_file, out_dir)
 
 

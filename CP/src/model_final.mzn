@@ -1,5 +1,6 @@
 include "cumulative.mzn";
 include "alldifferent.mzn";
+include "diffn.mzn";
 
 % input of the problem
 
@@ -60,7 +61,7 @@ constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
 constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 
 % relationships among circuits
-constraint forall(i,j in CIRCUITS where i < j)(p_x[i] + x[i] <= p_x[j] \/ p_x[j] + x[j] <= p_x[i] \/ p_y[i] + y[i] <= p_y[j] \/ p_y[j] + y[j] <= p_y[i]);
+constraint diffn(p_x, p_y, x, y);
 
 
 % considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
