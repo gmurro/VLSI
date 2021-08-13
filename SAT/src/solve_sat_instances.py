@@ -27,34 +27,31 @@ def main():
     args = parser.parse_args()
 
     # model to execute
-    model = "final"
     if args.simmetry:
         model = "simmetry"
     elif args.bimander:
         model = "bimander"
     elif args.rotation:
         model = "rotation"
-
+    else:
+        model = "final"
 
     in_dir = args.in_dir if args.in_dir is not None else default_in_dir
-    out_dir = args.out_dir if args.out_dir is not None else default_out_dir
-    rotation = args.rotation if args.rotation is not None else False
+    out_dir = args.out_dir if args.out_dir is not None else os.path.join(default_out_dir, model)
 
-    """in_dir = args.in_dir
-    out_dir = args.out_dir
-    rotation = args.rotation if args.rotation is not None else False
+    for i in range(len(glob(os.path.join(in_dir, '*.txt')))):
+        in_file = os.path.join(in_dir, f'ins-{i+1}.txt')
 
-    if not rotation:
+        print(f"\n\nSOLVING INSTANCE {i+1}:")
 
-        # running standard model
-        for in_file in glob(os.path.join(in_dir, '*.txt')):
-            md.solve_instance(in_file, out_dir)"""
-
-    '''else:
-
-        # running rotation model
-        for in_file in glob(os.path.join(in_dir, '*.txt')):
-            mdr.solve_instance(in_file, out_dir)'''
+        if args.simmetry:
+            model_simmetry.solve_instance(in_file, out_dir)
+        elif args.bimander:
+            model_bimander.solve_instance(in_file, out_dir)
+        elif args.rotation:
+            model_rotation.solve_instance(in_file, out_dir)
+        else:
+            model_final.solve_instance(in_file, out_dir)
 
 
 if __name__ == '__main__':
