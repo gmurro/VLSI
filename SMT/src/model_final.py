@@ -163,14 +163,10 @@ def solve_instance(in_file, out_dir):
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, length_sol, out_file, elapsed_time)
 
-    elif opt.reason_unknown() == "timeout":
-        elapsed_time = time.time() - start_time
-        print(f'{elapsed_time * 1000:.1f} ms')
-        print("Timeout")
     else:
         elapsed_time = time.time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
-        print("Unsatisfiable")
+        print("Solution not found")
 
 
 def main():
