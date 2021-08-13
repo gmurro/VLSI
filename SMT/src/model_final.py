@@ -95,8 +95,9 @@ def solve_instance(in_file, out_dir):
     length = z3_max([p_y[i] + y[i] for i in range(n)])
 
     # domain bounds
-    domain_x = [And(p_x[i] >= 0,p_x[i] <= w-min(x)) for i in range(n)]
-    domain_y = [And(p_y[i] >= 0,p_y[i] <= l_max-min(y)) for i in range(n)]
+    # domain_x = [And(p_x[i] >= 0,p_x[i] <= w-min(x)) for i in range(n)]
+    domain_x = [p_x[i] >= 0 for i in range(n)]
+    domain_y = [p_y[i] >= 0 for i in range(n)]
 
     # different coordinates
     all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
@@ -134,13 +135,13 @@ def solve_instance(in_file, out_dir):
 
     # setting the optimizer
     opt = Optimize()
-    opt.add(domain_x + domain_y + overlapping + all_different + cumulative_x +
-            cumulative_y + max_w + max_h + symmetry + left)
+    opt.add(domain_x + domain_y + all_different + overlapping + cumulative_x + cumulative_y +
+            max_w + max_h + symmetry + left)
     opt.minimize(length)
 
     # maximum time of execution
     timeout = 300000
-    opt.set(timeout=timeout)
+    opt.set('timeout', timeout)
 
     p_x_sol = []
     p_y_sol = []
@@ -171,7 +172,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
 
-    in_file = "..\..\data\instances_txt\ins-1.txt"
+    in_file = "..\..\data\instances_txt\ins-8.txt"
     out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 
