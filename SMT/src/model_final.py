@@ -140,7 +140,7 @@ def solve_instance(in_file, out_dir):
 
     # maximum time of execution
     timeout = 300000
-    opt.set('timeout', timeout)
+    opt.set("timeout", timeout)
 
     p_x_sol = []
     p_y_sol = []

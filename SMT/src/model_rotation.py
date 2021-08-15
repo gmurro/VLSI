@@ -98,7 +98,7 @@ def solve_instance(in_file, out_dir):
 
     # maximum time of execution
     timeout = 300000
-    opt.set(timeout=timeout)
+    opt.set("timeout", timeout)
 
     p_x_sol = []
     p_y_sol = []
@@ -126,7 +126,6 @@ def solve_instance(in_file, out_dir):
 
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length_sol, out_file, elapsed_time)
-
     elif opt.reason_unknown() == "timeout":
         elapsed_time = time.time() - start_time
         print(f'{elapsed_time * 1000:.1f} ms')
