@@ -25,7 +25,7 @@ def solve_instance(cores, model, in_file, out_dir):
 def main():
     cores = 1
     model = "model_final.mzn"
-    in_file = "..\instances_dzn\ins-21.dzn"
+    in_file = "..\instances_dzn\ins-1.dzn"
     out_dir = "..\\out\\final"
 
     solve_instance(cores, model, in_file, out_dir)

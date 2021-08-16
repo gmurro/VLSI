@@ -1,20 +1,19 @@
-import sys
-from CP.src.cp_utils import compute_l_max
+def compute_l_max(x,y,w):
+    l_max = sum(y)
+    max_x = max(x)
+    max_y = max(y)
+    w_blocks = w // max_x
+    l_max = -(l_max // -w_blocks)
+    l_max = max_y if l_max < max_y else l_max
+    return l_max
 
 txt_path = "../data/instances_txt"
 dzn_path = "../CP/instances_dzn"
 
-#if len(sys.argv) != 3:
-    #print('Usage: instances_to_dzn.py <input_file> <output_file>')
-    #sys.exit(1)
 
-# if you want to do all the files decomment and indent correctly
 for k in range(1, 41):
     output_filename = dzn_path + "/ins-" + str(k) + ".dzn"
     input_filename = txt_path + "/ins-" + str(k) + ".txt"
-
-#input_filename = txt_path + "/" + sys.argv[1]
-#output_filename = dzn_path + "/" + sys.argv[2]
 
     with open(input_filename, 'r') as f_in:
         lines = f_in.read().splitlines()
