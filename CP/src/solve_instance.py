@@ -12,7 +12,7 @@ def solve_instance(cores, model, in_file, out_dir):
     instance_name = instance_name[:len(instance_name) - 4]
     out_file = os.path.join(out_dir, instance_name + '-out.txt')
     with open(out_file, 'w') as f:
-        print(f'{out_file}:', end='\t', flush=True)
+        print(f'{out_file}:', end='\n', flush=True)
         start_time = time()
         subprocess.run(command.split())
         elapsed_time = time() - start_time

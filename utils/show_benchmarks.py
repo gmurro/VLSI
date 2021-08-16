@@ -12,6 +12,7 @@ def get_dataframe(list_of_dir, column_names):
         dir_dict = {}
         for instance_name in os.listdir(directory):
             file_ins = os.path.join(directory, instance_name)
+
             with open(file_ins, 'r') as f_in:
                 lines = f_in.read().splitlines()
                 elapsed_time = float(lines[-1])
@@ -33,7 +34,8 @@ def get_dataframe(list_of_dir, column_names):
 
 def show_histogram(df, title, x_label, y_label):
 
-    ax = df.plot.bar(rot=0)
+    ax = df.plot.bar(rot=90)
+    ax.set_yscale('log')
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
@@ -43,7 +45,7 @@ def show_histogram(df, title, x_label, y_label):
 
 def main():
     column_names = ['CP', 'SAT', 'SMT']
-    directories = ["../CP/out/out_final", "../SAT/out/final", "../SMT/out/out_final"]
+    directories = ["../CP/out/final", "../SAT/out/final", "../SMT/out/final"]
     data = get_dataframe(directories, column_names)
     show_histogram(data, 'Benchmark with different methods', 'Instances', 'Time in seconds')
 

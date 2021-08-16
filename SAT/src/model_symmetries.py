@@ -142,7 +142,7 @@ def solve_instance(in_file, out_dir):
 
 def main():
     in_file = "..\..\data\instances_txt\ins-4.txt"
-    out_dir = "..\\out\\simmetry"
+    out_dir = "..\\out\\symmetries"
     solve_instance(in_file, out_dir)
 
 

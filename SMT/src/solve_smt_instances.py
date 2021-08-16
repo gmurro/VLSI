@@ -4,6 +4,8 @@ import model_final as md
 import model_rotation as mdr
 from z3 import *
 
+default_in_dir = "..\..\data\instances_txt" if os.name == 'nt' else "../../data/instances_txt"
+default_out_dir = "..\out" if os.name == 'nt' else "../out"
 
 def main():
 
