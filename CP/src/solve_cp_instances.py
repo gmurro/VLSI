@@ -31,7 +31,7 @@ def main():
     else:
         model = "final"
 
-    print(f'Using model_{model} to solve instances')
+    print(f'Using model_{model} to solve instances.')
 
     in_dir = args.in_dir if args.in_dir is not None else default_in_dir
     out_dir = args.out_dir if args.out_dir is not None else os.path.join(default_out_dir, model)
@@ -39,7 +39,7 @@ def main():
     for i in range(len(glob(os.path.join(in_dir, '*.dzn')))):
         in_file = os.path.join(in_dir, f'ins-{i + 1}.dzn')
 
-        print(f"\n\nSOLVING INSTANCE {i + 1}:")
+        print(f"\nSOLVING INSTANCE {i + 1}:")
 
         cores = 1
 
