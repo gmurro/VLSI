@@ -5,7 +5,7 @@ from tqdm import tqdm
 def solve_instance(in_file, out_dir):
     instance_name = in_file.split('\\')[-1] if os.name == 'nt' else in_file.split('/')[-1]
     instance_name = instance_name[:len(instance_name) - 4]
-    out_file = os.path.join(out_dir, instance_name + '-out_final.txt')
+    out_file = os.path.join(out_dir, instance_name + '-out.txt')
 
     w, n, x, y, l_max = read_file(in_file)
 
@@ -86,12 +86,12 @@ def solve_instance(in_file, out_dir):
     solver.add(exactly_one_circuit_positioning)
     solver.add(one_hot_length)
     solver.add(length_circuits_positioning)
-    solver.add(highest_circuit_first)
+    #solver.add(highest_circuit_first)
 
 
     # maximum time of execution
     timeout = 3000000
-    solver.set(timeout=timeout)
+    solver.set("timeout", timeout)
 
     ''' SOLVING THE PROBLEM '''
     print('Checking the model...')
@@ -139,7 +139,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-4.txt"
+    in_file = "..\..\data\instances_txt\ins-21.txt"
     out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 

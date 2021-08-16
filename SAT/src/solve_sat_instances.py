@@ -7,7 +7,7 @@ import model_simmetry
 import model_rotation
 
 default_in_dir = "..\..\data\instances_txt" if os.name == 'nt' else "../../data/instances_txt"
-default_out_dir = "..\out" if os.name == 'nt' else "../out_final"
+default_out_dir = "..\out" if os.name == 'nt' else "../out"
 
 
 def main():
