@@ -90,7 +90,7 @@ def solve_instance(in_file, out_dir):
 
 
     # maximum time of execution
-    timeout = 3000000
+    timeout = 300000
     solver.set("timeout", timeout)
 
     ''' SOLVING THE PROBLEM '''
@@ -132,6 +132,9 @@ def solve_instance(in_file, out_dir):
         # storing result
         write_file(w, n, x, y, p_x_sol, p_y_sol, rot_sol, length_sol, elapsed_time, out_file)
 
+        if solver.reason_unknown() == "timeout":
+            print("Timeout reached, no optimal solution provided")
+
     elif solver.reason_unknown() == "timeout":
         print("Timeout reached, no optimal solution provided")
     else:
@@ -139,7 +142,7 @@ def solve_instance(in_file, out_dir):
 
 
 def main():
-    in_file = "..\..\data\instances_txt\ins-21.txt"
+    in_file = "..\..\data\instances_txt\ins-11.txt"
     out_dir = "..\\out\\final"
     solve_instance(in_file, out_dir)
 
