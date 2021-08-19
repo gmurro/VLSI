@@ -41,7 +41,7 @@ l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
 % duel modeling
 % channeling with a matrix containing the distribution of the circuits
-set of int: VALUES = 0..n;
+set of int: VALUES = 1..n+1;
 array[0..w-1,0..l_max-1] of var VALUES: board;
 
 % constraints of the problem

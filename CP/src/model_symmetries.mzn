@@ -42,7 +42,7 @@ l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
 % duel modeling
 % channeling with a matrix containing the distribution of the circuits
-set of int: VALUES = 0..n;
+set of int: VALUES = 1..n+1;
 array[0..w-1,0..l_max-1] of var VALUES: plate;
 
 
@@ -84,9 +84,9 @@ constraint forall(j in 0..l_max-1)(
 
 % symmetry breaking (horizontal flip, vertical flip and 180° rotation)
 constraint symmetry_breaking_constraint(
-           lex_lesseq([ plate[i,j] | i in 0..w-1, j in reverse(0..l_max-1)], array1d(plate)) 
-        /\ lex_lesseq([ plate[i,j] | i in reverse(0..w-1), j in 0..l_max-1], array1d(plate)) 
-        /\ lex_lesseq([ plate[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)], array1d(plate)));
+           lex_lesseq(array1d(plate), [ plate[i,j] | i in 0..w-1, j in reverse(0..l_max-1)]) 
+        /\ lex_lesseq(array1d(plate),[ plate[i,j] | i in reverse(0..w-1), j in 0..l_max-1]) 
+        /\ lex_lesseq(array1d(plate), [ plate[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)]));
 
 % Parameters to control the search heuristic and restart strategy
 int: heuristic = 6;
