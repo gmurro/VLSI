@@ -86,7 +86,7 @@ def solve_instance(in_file, out_dir):
     solver.add(exactly_one_circuit_positioning)
     solver.add(one_hot_length)
     solver.add(length_circuits_positioning)
-    #solver.add(highest_circuit_first)
+    solver.add(highest_circuit_first)
 
 
     # maximum time of execution
