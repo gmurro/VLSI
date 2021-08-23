@@ -34,7 +34,7 @@ def get_dataframe(list_of_dir, column_names):
 
 def show_histogram(df, title, x_label, y_label):
 
-    ax = df.plot.bar(rot=90)
+    ax = df.plot.bar(rot=90, width=1)
     ax.set_yscale('log')
     ax.set_title(title)
     ax.set_xlabel(x_label)
@@ -44,8 +44,9 @@ def show_histogram(df, title, x_label, y_label):
 
 
 def main():
-    column_names = ['CP', 'SAT', 'SMT']
-    directories = ["../CP/out/final", "../SAT/out/final", "../SMT/out/final"]
+    column_names = ['final', 'dual', 'rotation']
+    directories = ["../CP/out/final_domWdeg_min_no_restart", "../CP/out/symmetries",
+                   "../CP/out/rotation_domWdeg_min_no_restart"]
     data = get_dataframe(directories, column_names)
     show_histogram(data, 'Benchmark with different methods', 'Instances', 'Time in seconds')
 
