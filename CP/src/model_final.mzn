@@ -79,8 +79,8 @@ constraint symmetry_breaking_constraint(
 );
 
 % Parameters to control the search heuristic and restart strategy
-int: heuristic = 6;
-int: restart = 4;
+int: heuristic = 1;
+int: restart = 5;
 
 ann: search_ann_x = 
 if heuristic == 1 then
