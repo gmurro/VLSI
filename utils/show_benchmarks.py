@@ -44,9 +44,10 @@ def show_histogram(df, title, x_label, y_label):
 
 
 def main():
-    column_names = ['final', 'dual', 'rotation']
-    directories = ["../CP/out/final_domWdeg_min_no_restart", "../CP/out/symmetries",
-                   "../CP/out/rotation_domWdeg_min_no_restart"]
+    column_names = ['A', 'B', 'C', 'D', 'E', 'F']
+    directories = ["../CP/out/final_domWdeg_min_no_restart", "../CP/out/final_domWdeg_random_linear",
+                   "../CP/out/final_domWdeg_random_luby", "../CP/out/final_domWdeg_random_no_restart",
+                   "../CP/out/final_first_fail_random_linear", "../CP/out/final_input_order_indomain_min_no_restart"]
     data = get_dataframe(directories, column_names)
     show_histogram(data, 'Benchmark with different methods', 'Instances', 'Time in seconds')
 
