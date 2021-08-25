@@ -63,18 +63,25 @@ def filter_solved_instances(results):
     return real_results, solved_instances
 
 
-def compute_position(positions, index, length, num_dir):
+def compute_position(positions, total, index, length):
+    """
+    used to compute the position where the bar will be put
+    """
 
-    return (positions - length / 2) + index * length / num_dir
+    return positions - total / 2 + length / 2 + index * length
 
 
-def show_bar_chart(results, ins_labels, column_labels, y_label, title):
+def show_bar_chart(results, ins_labels, column_labels, x_label, y_label, title):
+
+    # step for providing more space among columns
+    step = 22
 
     # label locations
-    x = np.arange(results.shape[1])
+    x = np.arange(results.shape[1]*step, step=step)
 
     # width of the bars
-    width = 0.35
+    total_width = (step - 5)
+    width = total_width / results.shape[0]
 
     fig, ax = plt.subplots()
 
@@ -82,9 +89,10 @@ def show_bar_chart(results, ins_labels, column_labels, y_label, title):
 
     # bar chart for each directory
     for dir_index in range(results.shape[0]):
-        rects.append(ax.bar(compute_position(x, dir_index + 1, width, results.shape[0]), results[dir_index][:], width,
+        rects.append(ax.bar(compute_position(x, total_width, dir_index, width), results[dir_index][:], width,
                             label=column_labels[dir_index]))
 
+    ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.set_yscale('log')
     ax.set_title(title)
@@ -104,10 +112,11 @@ def main():
 
     results = get_results(directories, num)
     real_results, instances_names = filter_solved_instances(results)
+    x_label = "Instance"
     y_label = "Time in seconds"
     title = "Benchmark on different search strategies with CP final model"
 
-    show_bar_chart(real_results, instances_names,column_names, y_label, title)
+    show_bar_chart(real_results, instances_names,column_names, x_label, y_label, title)
 
 
 main()
