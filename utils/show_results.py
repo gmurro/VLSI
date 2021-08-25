@@ -105,16 +105,15 @@ def show_bar_chart(results, ins_labels, column_labels, x_label, y_label, title):
 
 def main():
 
-    column_names = ['A', 'B', 'C', 'D']
-    directories = ["../CP/out/final_domWdeg_min_no_restart", "../CP/out/final_domWdeg_random_linear",
-                   "../CP/out/final_domWdeg_random_luby", "../CP/out/final_domWdeg_random_no_restart"]
+    column_names = ['final', 'rotation']
+    directories = ["../SMT/out/final", "../SMT/out/rotation"]
     num = 40
 
     results = get_results(directories, num)
     real_results, instances_names = filter_solved_instances(results)
     x_label = "Instance"
     y_label = "Time in seconds"
-    title = "Benchmark on different search strategies with CP final model"
+    title = "Comparison among different SMT models"
 
     show_bar_chart(real_results, instances_names,column_names, x_label, y_label, title)
 
