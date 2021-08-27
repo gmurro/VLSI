@@ -27,7 +27,7 @@ Then run the file
 python show_results.py
 ```
 
-### Production of dzn instances from txt
+### Production of dzn instances from txt for CP models
 
 In order to convert .txt instances into .dzn instances, run
 
