@@ -39,7 +39,7 @@ def solve_instance(in_file, out_dir):
         # clause containing all possible positions of each circuit into the plate
         all_circuit_positions = []
 
-        # Iterate over all the coordinates where p can fit
+        # Iterate over all the coordinates where the circuit can fit
         for i in range(l_max - y_k + 1):
             for j in range(w - x_k + 1):
 
