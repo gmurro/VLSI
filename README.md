@@ -26,3 +26,11 @@ Then run the file
 ```
 python show_results.py
 ```
+
+### Production of dzn instances from txt
+
+In order to convert .txt instances into .dzn instances, run
+
+```console
+python instances_to_dzn.py
+```
