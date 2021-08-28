@@ -42,7 +42,7 @@ l = max([p_y[i] + y[i] | i in CIRCUITS]);
 % duel modeling
 % channeling with a matrix containing the distribution of the circuits
 set of int: VALUES = 1..n+1;
-array[0..w-1,0..l_max-1] of var VALUES: board;
+array[0..l_max-1,0..w-1] of var VALUES: plate;
 
 % constraints of the problem
 
@@ -72,12 +72,13 @@ constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(board[i,j] == k <-
 
 % relationship on the space covered by each circuit
 
-constraint forall(i in 0..w-1)(
-  global_cardinality_low_up([board[i,j] | j in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
+% cardinality constraint
+constraint forall(i in 0..l_max-1)(
+  global_cardinality_low_up([plate[i,j] | j in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
 );
 
-constraint forall(j in 0..l_max-1)(
-  global_cardinality_low_up([board[i,j] | i in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
+constraint forall(j in 0..w-1)(
+  global_cardinality_low_up([plate[i,j] | i in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
 );
 
 % Parameters to control the search heuristic and restart strategy

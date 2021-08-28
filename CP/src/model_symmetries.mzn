@@ -43,7 +43,7 @@ l = max([p_y[i] + y[i] | i in CIRCUITS]);
 % duel modeling
 % channeling with a matrix containing the distribution of the circuits
 set of int: VALUES = 1..n+1;
-array[0..w-1,0..l_max-1] of var VALUES: plate;
+array[0..l_max-1,0..w-1] of var VALUES: plate;
 
 
 % constraints of the problem
@@ -71,22 +71,22 @@ constraint cumulative(p_x, x, y, l_max);
 
 % channelling constraint
 % constraint on the board
-constraint forall(i in 0..w-1,j in 0..l_max-1, k in CIRCUITS)(plate[i,j] == k <-> (p_x[k] <= i /\ i < p_x[k] + x[k] /\ p_y[k] <= j /\ j < p_y[k] + y[k]));
+constraint forall(i in 0..l_max-1,j in 0..w-1, k in CIRCUITS)(plate[i,j] == k <-> (p_x[k] <= i /\ i < p_x[k] + x[k] /\ p_y[k] <= j /\ j < p_y[k] + y[k]));
 
 % cardinality constraint
-constraint forall(i in 0..w-1)(
-  global_cardinality_low_up([plate[i,j] | j in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
+constraint forall(i in 0..l_max-1)(
+  global_cardinality_low_up([plate[i,j] | j in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
 );
 
-constraint forall(j in 0..l_max-1)(
-  global_cardinality_low_up([plate[i,j] | i in 0..w-1], 0..n, [0 | k in 0..n], [w | k in 0..n])
+constraint forall(j in 0..w-1)(
+  global_cardinality_low_up([plate[i,j] | i in 0..l_max-1], 0..n, [0 | k in 0..n], [l_max | k in 0..n])
 );
 
 % symmetry breaking (horizontal flip, vertical flip and 180° rotation)
 constraint symmetry_breaking_constraint(
-           lex_lesseq(array1d(plate), [ plate[i,j] | i in 0..w-1, j in reverse(0..l_max-1)]) 
-        /\ lex_lesseq(array1d(plate),[ plate[i,j] | i in reverse(0..w-1), j in 0..l_max-1]) 
-        /\ lex_lesseq(array1d(plate), [ plate[i,j] | i in reverse(0..w-1), j in reverse(0..l_max-1)]));
+           lex_lesseq(array1d(plate), [ plate[i,j] | i in 0..l_max-1, j in reverse(0..w-1)])
+        /\ lex_lesseq(array1d(plate),[ plate[i,j] | i in reverse(0..l_max-1), j in 0..w-1])
+        /\ lex_lesseq(array1d(plate), [ plate[i,j] | i in reverse(0..l_max-1), j in reverse(0..w-1)]));
 
 % Parameters to control the search heuristic and restart strategy
 int: heuristic = 6;
