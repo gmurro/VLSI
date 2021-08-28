@@ -25,6 +25,7 @@ array[CIRCUITS] of FEASIBLE_WIDTH: x;
 array[CIRCUITS] of FEASIBLE_HEIGTH: y;
 
 % order of magnitude of w
+% N.B. not used in this model but necessary to run it because it is in the input file
 int: mag_w;
 
 
@@ -49,11 +50,6 @@ array[0..l_max-1,0..w-1] of var VALUES: plate;
 % constraints of the problem
 
 % IMPLIED CONSTRAINTS
-
-
-% all coordinates must be different
-
-constraint alldifferent([mag_w * p_y[i] + p_x[i] | i in CIRCUITS]);
 
 % maximum width
 constraint max([p_x[i] + x[i] | i in CIRCUITS]) <= w;
