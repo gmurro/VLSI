@@ -3,7 +3,7 @@ import time
 from tqdm import tqdm
 
 def compute_m(n):
-    return int(np.ceil(np.sqrt(n)))
+    return int(np.ceil(n/2))
 
 
 def solve_instance(in_file, out_dir):
