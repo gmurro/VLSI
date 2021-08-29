@@ -95,7 +95,7 @@ python show_results.py
 
 In order to convert .txt instances into .dzn instances, run
 
-```console
+```
 python instances_to_dzn.py
 ```
 
@@ -107,11 +107,11 @@ We use Git for versioning.
 
 ## Group members
 
-| Reg No. |   Name    |  Surname  |                 Email                  |                       Username                        |
-| :-----: | :-------: | :-------: | :------------------------------------: | :---------------------------------------------------: |
-| 997317  | Giuseppe  |   Murro   |    `giuseppe.murro@studio.unibo.it`    |         [_gmurro_](https://github.com/gmurro)         |
-| 985203  | Salvatore | Pisciotta | `salvatore.pisciotta2@studio.unibo.it` | [_SalvoPisciotta_](https://github.com/SalvoPisciotta) |
-
+|  Reg No.  |  Name     |  Surname  |     Email                              |    Username      |
+| :-------: | :-------: | :-------: | :------------------------------------: | :--------------: |
+|   997317  | Giuseppe  | Murro     | `giuseppe.murro@studio.unibo.it`       | [_gmurro_](https://github.com/gmurro)         |
+|   985203  | Salvatore | Pisciotta | `salvatore.pisciotta2@studio.unibo.it` | [_SalvoPisciotta_](https://github.com/SalvoPisciotta) |
+|  1005271  | Giuseppe  | Boezio    | `giuseppe.boezio@studio.unibo.it`      | [_giuseppeboezio_](https://github.com/giuseppeboezio) |
 
 
 ## License
