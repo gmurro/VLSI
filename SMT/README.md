@@ -3,7 +3,7 @@
 
 ``` console
 cd SMT\src
-pyhton solve_sat_instances.py [-h] [-i <instances folder>] [-o <folder to save output>] [-r execution of  model rotation]
+pyhton solve_smt_instances.py [-h] [-i <instances folder>] [-o <folder to save output>] [-r execution of  model rotation]
 ```
 
 # Execute one single instance:
@@ -17,6 +17,6 @@ out_dir = <folder to save the output>
 Run the model
 
 ``` console
-cd CP\src
+cd SMT\src
 python <model file name>
 ```

@@ -17,6 +17,6 @@ out_dir = <folder to save the output>
 Run the model
 
 ``` console
-cd CP\src
+cd SAT\src
 python <model file name>
 ```
