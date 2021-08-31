@@ -99,7 +99,7 @@ def solve_instance(in_file, out_dir):
     domain_y = [p_y[i] >= 0 for i in range(n)]
 
     # different coordinates
-    all_different = [Distinct([mag_w * p_x[i] + p_y[i]]) for i in range(n)]
+    all_different = [Distinct([mag_w * p_y[i] + p_x[i]]) for i in range(n)]
 
     # cumulative constraints
     cumulative_y = z3_cumulative(p_y, y, x, w)

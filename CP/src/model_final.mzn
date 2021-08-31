@@ -42,7 +42,7 @@ array[CIRCUITS] of var 0..w-min(x): p_x;
 array[CIRCUITS] of var 0..l_max-min(y): p_y;
 
 % length of the plate to minimize
-var FEASIBLE_HEIGTH: l;
+var FEASIBLE_HEIGHT: l;
 l = max([p_y[i] + y[i] | i in CIRCUITS]);
 
 
@@ -60,7 +60,7 @@ constraint max([p_y[i] + y[i] | i in CIRCUITS]) <= l_max;
 constraint diffn(p_x, p_y, x, y);
 
 
-% considering each circuit as an activity whose duration is the verical length and amount of resources is equals to its horizontal length
+% considering each circuit as an activity whose duration is the vertical length and amount of resources is equals to its horizontal length
 constraint cumulative(p_y, y, x, w);
 constraint cumulative(p_x, x, y, l_max);
 
