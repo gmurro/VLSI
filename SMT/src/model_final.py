@@ -112,10 +112,6 @@ def solve_instance(in_file, out_dir):
     max_h = [z3_max([p_y[i] + y[i] for i in range(n)]) <= l_max]
 
     # relationship avoiding overlapping
-    '''overlapping = [Or(p_x[i] + x[i] <= p_x[j],
-                              p_x[j] + x[j] <= p_x[i],
-                              p_y[i] + y[i] <= p_y[j],
-                              p_y[j] + y[j] <= p_y[i]) for j in range(n) for i in range(j)]'''
     overlapping = []
     for (i,j) in combinations(range(n),2):
         overlapping.append(Or(p_x[i] + x[i] <= p_x[j],
